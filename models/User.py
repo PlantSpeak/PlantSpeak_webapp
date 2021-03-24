@@ -1,4 +1,5 @@
-from app import db, bcrypt, session
+from database import bcrypt, db
+from flask import current_app
 import uuid
 
 USERNAME_MIN_LENGTH = 3
@@ -23,12 +24,12 @@ class User(db.Model):
         self.password_salt = uuid.uuid4().__str__()
         self.password_hash=bcrypt.generate_password_hash(self.password_salt+password)
 
-    def login(self, password_attempt):
+    def login(self, password_attempt, bcrypt):
         if bcrypt.check_password_hash(self.password_hash, self.password_salt+password_attempt):
-            session['username'] = self.username
+            current_app.session['username'] = self.username
             return True
         else:
             return False
 
     def logout(self):
-        session.pop('username', None)
+        current_app.session.pop('username', None)

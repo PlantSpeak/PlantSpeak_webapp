@@ -1,0 +1,14 @@
+
+{%  extends 'base.html' %}
+
+{%  block content %}
+    {% from "_formlayout.html" import generate_field %}
+    <form method="post">
+    {{ generate_field(form.email) }}
+    {{ generate_field(form.username) }}
+    {{ generate_field(form.password) }}
+    {{ generate_field(form.confirm_password) }}
+    <input type="submit" value="Submit">
+        {{error}}
+    </form>
+{%  endblock %}
