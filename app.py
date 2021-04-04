@@ -27,9 +27,10 @@ def prepare_db():
 
 @application.route('/')
 def home():
-    if session.get('username'):
-        return 'Welcome to PlantSpeak, %s!' % session['username']
-    return 'Welcome to PlantSpeak!'
+    return render_template("dashboard.html")
+    #if session.get('username'):
+    #    return 'Welcome to PlantSpeak, %s!' % session['username']
+    #return 'Welcome to PlantSpeak!'
 
 if __name__ == '__main__':
     application.run(debug=True, use_reloader=True)

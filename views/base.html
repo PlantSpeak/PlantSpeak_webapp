@@ -12,7 +12,29 @@
 </head>
 
 <body>
-{% block  content %} {% endblock %}
+    <nav class="navbar navbar-dark bg-success">
+        <a class="navbar-brand" href="{{ url_for('home') }}">PlantSpeak</a>
+        {%  if session['username'] %}
+
+        <ul class=navbar-nav mr-auto mt-2 mt-lg-0">
+                  <li class="nav-item">
+                    <span class="navbar-text">
+                        Welcome, {{ session['username']}}
+                    </span>
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link text-white" href="{{ url_for('users.logout') }}">Logout</a>
+                  </li>
+        {% else %}
+              <li class="nav-item">
+                    <a class="nav-link text-white" href="{{ url_for('users.login') }}">Log In</a>
+              </li>
+
+        {%  endif %}
+        </ul>
+    </nav>
+
+{% block content %} {% endblock %}
 </body>
 
 </html>

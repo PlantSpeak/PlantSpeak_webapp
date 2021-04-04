@@ -6,6 +6,10 @@ import flask_bcrypt
 
 user_pages = Blueprint('users', __name__, template_folder="views")
 
+class LoginForm(Form):
+    username = StringField('Username')
+    password = PasswordField('Password')
+
 class RegistrationForm(Form):
     username = StringField('Username', [validators.Length(min=USERNAME_MIN_LENGTH, max=USERNAME_MAX_LENGTH)])
     email = StringField('Email Address', [validators.Length(min=EMAIL_MIN_LENGTH, max=EMAIL_MAX_LENGTH)])
@@ -25,3 +29,23 @@ def register():
         session['username'] = newUser.username
         return redirect(url_for('home'))
     return render_template("register.html", form=form)
+
+@user_pages.route('/login', methods=['GET','POST'])
+def login():
+    form = LoginForm(request.form)
+    if request.method=="POST":
+        if form.validate():
+            user = User.query.filter_by(username=form.username.data).first()
+            if user:
+                if user.login(form.password.data):
+                    return redirect(url_for('home'))
+                else:
+                    form.password.errors.append("Incorrect password.")
+                    return render_template('login.html', form=form)
+        return render_template('login.html', form=form, error="Invalid entries. Please check your entries and try again.")
+    return render_template('login.html', form=form)
+
+@user_pages.route('/logout', methods=['GET','POST'])
+def logout():
+    session.pop('username')
+    return redirect(url_for('home'))
