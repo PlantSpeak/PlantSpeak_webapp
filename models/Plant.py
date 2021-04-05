@@ -4,10 +4,11 @@ import uuid
 
 NAME_MIN_LENGTH = 2
 NAME_MAX_LENGTH = 128
+LEVEL_MIN_LENGTH = 1
+LEVEL_MAX_LENGTH = 64
 LOCATION_MIN_LENGTH = 1 # Use '-' for empty locations/field?
 LOCATION_MAX_LENGTH = 64
-#PASSWORD_MIN_LENGTH = 8
-#PASSWORD_MAX_LENGTH = 128
+
 
 class Plant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
