@@ -27,7 +27,7 @@ def register():
         db.session.add(newUser)
         db.session.commit()
         session['username'] = newUser.username
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
     return render_template("register.html", form=form)
 
 @user_pages.route('/login', methods=['GET','POST'])
@@ -38,7 +38,7 @@ def login():
             user = User.query.filter_by(username=form.username.data).first()
             if user:
                 if user.login(form.password.data):
-                    return redirect(url_for('home'))
+                    return redirect(url_for('main.home'))
                 else:
                     form.password.errors.append("Incorrect password.")
                     return render_template('login.html', form=form)
