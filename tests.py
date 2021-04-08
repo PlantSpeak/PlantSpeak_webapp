@@ -7,6 +7,7 @@ import pytest
 
 testUsername = 'test123'
 testPassword = 'password'
+incorrectPassword = 'password!'
 
 @pytest.fixture()
 def setup(app):
@@ -28,9 +29,17 @@ def test_login(app, setup):
 
 def test_incorrect_password(app, setup):
     client = app.test_client()
-    client.post("/login", data={'username':testUsername, 'password':testPassword+"!"})
+    receipt = client.post("/login", data={'username':testUsername, 'password':incorrectPassword})
     with client:
-        client.get('/')
+        print("Incorrect password" in str(receipt.get_data()))
+        assert session.get('username') is None
+
+def test_multiple_incorrect_passwords(app, setup):
+    client = app.test_client()
+    for i in range(5):
+        receipt = client.post("/login", data={'username':testUsername, 'password':incorrectPassword})
+    with client:
+        print("You have exceeded the maximum number of password attempts. Please try again later." in str(receipt.get_data()))
         assert session.get('username') is None
 
 # import flask_unittest

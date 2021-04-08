@@ -32,20 +32,27 @@ def register():
 
 @user_pages.route('/login', methods=['GET','POST'])
 def login():
+    if session.get('password_attempts') is None:
+        session['password_attempts']=5
     form = LoginForm(request.form)
     if request.method=="POST":
-        if form.validate():
-            user = User.query.filter_by(username=form.username.data).first()
-            if user:
-                if user.login(form.password.data):
-                    return redirect(url_for('main.home'))
-                else:
-                    form.password.errors.append("Incorrect password.")
-                    return render_template('login.html', form=form)
-        return render_template('login.html', form=form, error="Invalid entries. Please check your entries and try again.")
+        if session['password_attempts']>0:
+            if form.validate():
+                user = User.query.filter_by(username=form.username.data).first()
+                if user:
+                    if user.login(form.password.data):
+                        return redirect(url_for('main.home'))
+                    else:
+                        session['password_attempts']-=1
+                        form.password.errors.append("Incorrect password. %d attempts remaining."%session['password_attempts'])
+                        return render_template('login.html', form=form)
+            return render_template('login.html', form=form, error="Invalid entries. Please check your entries and try again.")
+        else:
+            return render_template('login.html', form=form,
+                                   error="You have exceeded the maximum number of password attempts. Please try again later.")
     return render_template('login.html', form=form)
 
 @user_pages.route('/logout', methods=['GET','POST'])
 def logout():
     session.pop('username')
-    return redirect(url_for('home'))
+    return redirect(url_for('main.home'))
