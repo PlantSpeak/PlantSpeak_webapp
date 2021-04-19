@@ -25,3 +25,14 @@ def register():
         session['username'] = newUser.username
         return redirect(url_for('home'))
     return render_template("register.html", form=form)
+
+class CreateUserForm(Form):
+    username = StringField('Username', [validators.Length(min=USERNAME_MIN_LENGTH, max=USERNAME_MAX_LENGTH)])
+    email = StringField('Email Address', [validators.Length(min=EMAIL_MIN_LENGTH, max=EMAIL_MAX_LENGTH)])
+
+@application.route('/create_user')
+def create_user():
+    form = CreateUserForm(request.form)
+    random_password = str(uuid.uuid4())[:8]
+    if request.method=="POST" and form.validate():
+        newUser = User(password=random_password, username=form.username.data, email=form.email.data)
