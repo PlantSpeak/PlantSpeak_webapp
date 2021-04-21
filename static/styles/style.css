@@ -1,0 +1,32 @@
+body{
+    background-repeat:no-repeat;
+    background-attachment: fixed;
+    background-size:cover;
+}
+#login .container #login-row #login-column #login-box {
+    margin-top: 60px;
+    max-width: 600px;
+    height: 320px;
+    border: 1px solid #9C9C9C;
+    background-color: #EAEAEA;
+  }
+  #login .container #login-row #login-column #login-box #login-form {
+    padding: 20px;
+  }
+  #login .container #login-row #login-column #login-box #login-form {
+    margin-top: -5px;
+  }
+
+  #register .container #register-row #register-column #register-box {
+    margin-top: 60px;
+    max-width: 600px;
+    height: 520px;
+    border: 1px solid #9C9C9C;
+    background-color: #eaeaea;
+  }
+  #register .container #register-row #register-column #register-box #register-form {
+    padding: 20px;
+  }
+  #register .container #register-row #register-column #lregister-box #register-form {
+    margin-top: -85px;
+  }
