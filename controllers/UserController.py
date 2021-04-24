@@ -6,6 +6,10 @@ import flask_bcrypt
 
 user_pages = Blueprint('users', __name__, template_folder="views")
 
+class LoginForm(Form):
+    username = StringField('Username')
+    password = PasswordField('Password')
+
 class RegistrationForm(Form):
     username = StringField('Username', [validators.Length(min=USERNAME_MIN_LENGTH, max=USERNAME_MAX_LENGTH)])
     email = StringField('Email Address', [validators.Length(min=EMAIL_MIN_LENGTH, max=EMAIL_MAX_LENGTH)])
@@ -23,5 +27,32 @@ def register():
         db.session.add(newUser)
         db.session.commit()
         session['username'] = newUser.username
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
     return render_template("register.html", form=form)
+
+@user_pages.route('/login', methods=['GET','POST'])
+def login():
+    if session.get('password_attempts') is None:
+        session['password_attempts']=5
+    form = LoginForm(request.form)
+    if request.method=="POST":
+        if session['password_attempts']>0:
+            if form.validate():
+                user = User.query.filter_by(username=form.username.data).first()
+                if user:
+                    if user.login(form.password.data):
+                        return redirect(url_for('main.home'))
+                    else:
+                        session['password_attempts']-=1
+                        form.password.errors.append("Incorrect password. %d attempts remaining."%session['password_attempts'])
+                        return render_template('login.html', form=form)
+            return render_template('login.html', form=form, error="Invalid entries. Please check your entries and try again.")
+        else:
+            return render_template('login.html', form=form,
+                                   error="You have exceeded the maximum number of password attempts. Please try again later.")
+    return render_template('login.html', form=form)
+
+@user_pages.route('/logout', methods=['GET','POST'])
+def logout():
+    session.pop('username')
+    return redirect(url_for('main.home'))
