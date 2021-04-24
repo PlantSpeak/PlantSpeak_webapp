@@ -25,9 +25,6 @@ class Notification(db.Model):
         msg.body = self.message
         mail.send(msg)
 
-    def sendSMS(self):
-        return
-
     def send(self):
         if self.email:
             self.sendEmail()
