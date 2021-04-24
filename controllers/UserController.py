@@ -1,5 +1,6 @@
 from flask import Blueprint, current_app, url_for, request, redirect, render_template, session
 from models.User import *
+from models.Notification import *
 from database import db
 from wtforms import Form, BooleanField, StringField, PasswordField, validators
 import flask_bcrypt
@@ -30,9 +31,18 @@ class CreateUserForm(Form):
     username = StringField('Username', [validators.Length(min=USERNAME_MIN_LENGTH, max=USERNAME_MAX_LENGTH)])
     email = StringField('Email Address', [validators.Length(min=EMAIL_MIN_LENGTH, max=EMAIL_MAX_LENGTH)])
 
-@application.route('/create_user')
+@user_pages.route('/create_user', methods=['GET','POST'])
 def create_user():
     form = CreateUserForm(request.form)
     random_password = str(uuid.uuid4())[:8]
     if request.method=="POST" and form.validate():
         newUser = User(password=random_password, username=form.username.data, email=form.email.data)
+        db.session.add(newUser)
+        db.session.commit()
+        registered_notification = Notification("PlantSpeak Registration Details", """You have successfully signed up for PlantSpeak.
+         Your login details are as follows:
+         USERNAME: %s
+         PASSWORD %s""" % (newUser.username, random_password), newUser.email)
+        registered_notification.sendEmail()
+        return redirect(url_for('home'))
+    return render_template("create_user.html", form=form)
