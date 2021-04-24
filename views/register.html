@@ -1,14 +1,64 @@
-
 {%  extends 'base.html' %}
 
 {%  block content %}
     {% from "_formlayout.html" import generate_field %}
-    <form method="post">
+    <!-- <form method="post">
     {{ generate_field(form.email) }}
     {{ generate_field(form.username) }}
     {{ generate_field(form.password) }}
     {{ generate_field(form.confirm_password) }}
     <input type="submit" value="Submit">
         {{error}}
-    </form>
+    </form> -->
+
+
+    <body>
+
+        <div id="register">
+            <br/>
+            <div class="container">
+                <div id="register-row" class="row justify-content-center align-items-center">
+                    <div id="register-column" class="col-md-6">
+                        <div id="register-box" class="col-md-12">
+                            <form id="register-form" class="form" action="" method="post">
+                                <h3 class="text-center text-info">Register</h3>
+                                <div class="form-group">
+                                    <label for="form-control" class="text-info">Email:</label><br>
+                                    <input type="text" name="email" id="email" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label for="form-control" class="text-info">User name:</label><br>
+                                    <input type="text" name="username" id="username" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label for="form-control" class="text-info">Password:</label><br>
+                                    <input type="text" name="password" id="password" class="form-control">
+                                </div>                          
+                                <div class="form-group">
+                                    <label for="form-control" class="text-info"> Repeat Password:</label><br>
+                                    <input type="text" name="confirm_password" id="confirm_password" class="form-control">
+                                </div>
+                                <div class="form-group"><br>
+                                    <input type="submit" name="submit" class="btn btn-info btn-md" value="submit">
+                                </div>
+                               
+                                {{error}}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+
+
+
+
+
+
+
+
+
+
+    
 {%  endblock %}
