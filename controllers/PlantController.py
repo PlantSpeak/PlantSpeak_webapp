@@ -4,17 +4,18 @@ from models.PlantType import *
 from database import db
 from wtforms import Form, BooleanField, StringField, PasswordField, SelectField, validators
 from wtforms.fields.html5 import IntegerField, DecimalField
-from flask_table import Table, Col
+from flask_table import Table, Col, ButtonCol
 
 plant_pages = Blueprint('plants', __name__, template_folder="views")
 
 class PlantTable(Table):
+    plant_id = Col('Plant ID')
     type = Col('Plant Type')
     location = Col('Location')
-    floor = Col('Floor')
-    date_added = Col('Date Added')
+    level = Col('Floor')
 
-class DashboardTable(Table):
+class SavedListTable(Table):
+    plant_id = Col('Plant ID')
     type = Col('Plant Type')
     location = Col('Location')
     floor = Col('Floor')
@@ -22,24 +23,39 @@ class DashboardTable(Table):
     alerts = Col('Alerts')
     icon = Col('Icon')
     last_seen = Col('Last Seen')
+    remove_from_saved_list = ButtonCol('Remove', 'saved_list_remove', url_kwargs=dict(id='id'))
 
 class PlantRegistrationForm(Form):
     #plantname = StringField('Plant Name', [validators.Length(min=NAME_MIN_LENGTH, max=NAME_MAX_LENGTH)])
     plant_type = SelectField('Plant Type')
-    level = StringField('Plant Level', [validators.Length(min=LEVEL_MIN_LENGTH, max=LEVEL_MAX_LENGTH)])
+    level = StringField('Plant Level')
     location = StringField('Plant Location', [validators.Length(min=LOCATION_MIN_LENGTH, max=LOCATION_MAX_LENGTH)])
+
+def getPlantType(plant_id):
+    print(plant_id)
+    plant_type = PlantType.query.filter_by(id=plant_id).one()
+    return plant_type.name
 
 @plant_pages.route('/plants')
 def show_plants():
     plants = Plant.query.all()
-    return render_template("plants.html", plants=plants)
+    plant_records = []
+    for i in plants:
+        if i.type:
+            plant_type = getPlantType(i.type)
+        else:
+            plant_type = "None"
+        plant_record = dict(plant_id=i.id, type=plant_type, location=i.location, level=i.level)
+        plant_records.append(plant_record)
+    table = PlantTable(plant_records)
+    return render_template("plants.html", table=table)
 
 @plant_pages.route('/register/plant', methods=['GET','POST'])
 def register():
     form = PlantRegistrationForm(request.form)
     form.plant_type.choices = [(i.id, i.name) for i in PlantType.query.all()]
     if request.method=="POST" and form.validate():
-        newPlant = Plant(level=form.level.data, location=form.location.data)
+        newPlant = Plant(type=form.plant_type.data, level=form.level.data, location=form.location.data)
         db.session.add(newPlant)
         db.session.commit()
         #session['username'] = newUser.username
