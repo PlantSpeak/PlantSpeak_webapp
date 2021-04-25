@@ -1,0 +1,12 @@
+
+{%  extends 'base.html' %}
+
+{%  block content %}
+    {% from "_formlayout.html" import generate_field %}
+    <form method="post">
+    {{ generate_field(form.level) }}
+    {{ generate_field(form.location) }}
+    <input type="submit" value="Submit">
+        {{error}}
+    </form>
+{%  endblock %}
