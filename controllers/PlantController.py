@@ -1,6 +1,8 @@
 from flask import Blueprint, current_app, url_for, request, redirect, render_template, session
 from models.Plant import *
 from models.PlantType import *
+from models.Favourite import *
+from models.Reading import *
 from database import db
 from wtforms import Form, BooleanField, StringField, PasswordField, SelectField, validators
 from wtforms.fields.html5 import IntegerField, DecimalField
@@ -8,22 +10,26 @@ from flask_table import Table, Col, ButtonCol
 
 plant_pages = Blueprint('plants', __name__, template_folder="views")
 
-class PlantTable(Table):
+class BaseTable(Table):
+    classes = ['table', 'table-striped']
+
+class PlantTable(BaseTable):
     plant_id = Col('Plant ID')
     type = Col('Plant Type')
     location = Col('Location')
     level = Col('Floor')
+    favourite = ButtonCol('Favourite', 'plants.add_favourite', url_kwargs=dict(plant_id='plant_id'), button_attrs={'class': 'btn'})
+    remove_from_saved_list = ButtonCol('Remove', 'plants.plant_remove', url_kwargs=dict(plant_id='plant_id'), button_attrs={'class': 'btn'})
 
-class SavedListTable(Table):
+class SavedListTable(BaseTable):
     plant_id = Col('Plant ID')
     type = Col('Plant Type')
     location = Col('Location')
     floor = Col('Floor')
     condition = Col('Condition')
     alerts = Col('Alerts')
-    icon = Col('Icon')
     last_seen = Col('Last Seen')
-    remove_from_saved_list = ButtonCol('Remove', 'saved_list_remove', url_kwargs=dict(id='id'))
+    remove_from_saved_list = ButtonCol('Remove', 'plants.saved_list_remove', url_kwargs=dict(plant_id='plant_id'), button_attrs={'class': 'btn'})
 
 class PlantRegistrationForm(Form):
     #plantname = StringField('Plant Name', [validators.Length(min=NAME_MIN_LENGTH, max=NAME_MAX_LENGTH)])
@@ -31,10 +37,41 @@ class PlantRegistrationForm(Form):
     level = StringField('Plant Level')
     location = StringField('Plant Location', [validators.Length(min=LOCATION_MIN_LENGTH, max=LOCATION_MAX_LENGTH)])
 
+def getSavedList(plant_ids):
+    saved_list = []
+    for i in plant_ids:
+        Plant.query.filter_by(id=i)
+    return saved_list
+
 def getPlantType(plant_id):
     print(plant_id)
     plant_type = PlantType.query.filter_by(id=plant_id).one()
     return plant_type.name
+
+@plant_pages.route('/plant_remove/<plant_id>', methods=['GET','POST'])
+def plant_remove(plant_id):
+    favourites = Favourite.query.filter_by(plant_id=plant_id).all()
+    for i in favourites:
+        db.session.delete(i)
+    db.session.commit()
+    plant = Plant.query.filter_by(id=plant_id).one()
+    db.session.delete(plant)
+    db.session.commit()
+    return redirect(request.referrer)
+#
+# @plant_pages.route('/plant/<id>')
+# def show_plant(id):
+#     return render_template()
+
+@plant_pages.route('/add_favourite/<plant_id>', methods=['GET','POST'])
+def add_favourite(plant_id):
+    if session['user_id'] is not None:
+        favourite = Favourite(session['user_id'], plant_id)
+        db.session.add(favourite)
+        db.session.commit()
+        return redirect(request.referrer)
+    else:
+        return redirect(url_for('users.login'))
 
 @plant_pages.route('/plants')
 def show_plants():
@@ -67,11 +104,32 @@ def show_plant(plant_id):
     plant = Plant.query.filter_by(id=plant_id)
     return render_template('plant.html', plant=plant)
 
+@plant_pages.route('/saved_plant_remove/<plant_id>', methods=['GET','POST'])
+def saved_list_remove(plant_id):
+    plant = Favourite.query.filter_by(plant_id=plant_id).one()
+    db.session.delete(plant)
+    db.session.commit()
+    return redirect(request.referrer)
+
 @plant_pages.route('/dashboard')
 def dashboard():
     user_id = session['user_id']
-    user = User.query.filter_by(id=user_id)
-    table = DashboardTable()
+    # user = User.query.filter_by(id=user_id)
+    favourites = Favourite.query.filter_by(user_id=user_id).all()
+    favourites_records = []
+    for i in favourites:
+        plant = Plant.query.filter_by(id=i.plant_id).one()
+        last_reading = Reading.query.filter_by(plant_id=plant.id).order_by(Reading.time.desc()).first()
+        if plant.get_problems(last_reading):
+            condition="Needs Attention"
+        else:
+            condition="Healthy"
+        last_seen = str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(last_reading.time)))
+        print(last_reading.temperature)
+        favourites_records.append(dict(plant_id=i.plant_id, type=plant.type, location=plant.location,
+                                  floor=plant.level, condition=condition, alerts=None, last_seen=last_seen))
+    print(favourites_records)
+    table = SavedListTable(favourites_records)
     return render_template('dashboard.html', table=table)
 
 class PlantTypeRegistrationForm(Form):
@@ -113,4 +171,5 @@ def add_plant_type():
                                  form.min_light_intensity.data, form.max_light_intensity.data)
         db.session.add(newPlantType)
         db.session.commit()
+        return redirect(url_for('main.home'))
     return render_template("add_plant_type.html", form=form)

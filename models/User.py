@@ -26,6 +26,7 @@ class User(db.Model):
 
     def login(self, password_attempt):
         if bcrypt.check_password_hash(self.password_hash, self.password_salt+password_attempt):
+            session['user_id'] = self.id
             session['username'] = self.username
             return True
         else:

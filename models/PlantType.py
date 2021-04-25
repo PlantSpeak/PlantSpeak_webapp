@@ -1,13 +1,11 @@
-from database import bcrypt, db
-from flask import current_app
-import uuid
+from database import db
 import time
 
 PLANT_TYPE_NAME_MAX_LENGTH = 64
 
 class PlantType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(PLANT_TYPE_NAME_MAX_LENGTH))
+    name = db.Column(db.String(PLANT_TYPE_NAME_MAX_LENGTH), unique=True)
     requires_water = db.Column(db.Integer)
     watering_frequency = db.Column(db.Integer) #Interval in seconds.
     min_temp = db.Column(db.Float)

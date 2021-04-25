@@ -1,8 +1,10 @@
 from database import bcrypt, db
+from models.Plant import *
 from flask import current_app
 
 class Reading(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    plant_id = db.Column(db.Integer, db.ForeignKey(Plant.id))
     time = db.Column(db.Integer)
     temperature = db.Column(db.Float)
     humidity = db.Column(db.Float)
