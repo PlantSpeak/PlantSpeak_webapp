@@ -1,6 +1,7 @@
 from flask import Flask, Blueprint, session
 from controllers.MainController import main_pages
 from controllers.UserController import user_pages
+from controllers.PlantController import plant_pages
 import flask_sqlalchemy
 from database import bcrypt, db
 from mail_tool import mail
@@ -32,6 +33,7 @@ def create_app():
 
     application.register_blueprint(main_pages)
     application.register_blueprint(user_pages)
+    application.register_blueprint(plant_pages)
 
     return application
 

@@ -1,0 +1,23 @@
+{%  block content %}
+    <h2>Add Plant Type</h2>
+    {% from "_formlayout.html" import generate_field %}
+    <form method="post">
+    {{ generate_field(form.plant_type) }}
+    {{ generate_field(form.requires_water) }}
+        Water
+    {{ generate_field(form.watering_frequency_interval) }} time(s) per
+    {{ generate_field(form.watering_frequency_unit) }}
+    {{ generate_field(form.min_temp) }}
+    {{ generate_field(form.max_temp) }}
+    {{ generate_field(form.min_humidity) }}
+    {{ generate_field(form.max_humidity) }}
+    {{ generate_field(form.min_soil_moisture) }}
+    {{ generate_field(form.max_soil_moisture) }}
+    {{ generate_field(form.ideal_soil_moisture_level) }}
+    {{ generate_field(form.min_light_intensity) }}
+    {{ generate_field(form.max_light_intensity) }}
+    <input type="submit" value="Submit">
+        {{error}}
+    </form>
+
+{%  endblock %}
