@@ -27,6 +27,7 @@ def register():
         newUser = User(password=form.password.data, username=form.username.data, email=form.email.data)
         db.session.add(newUser)
         db.session.commit()
+        session['user_id'] = newUser.id
         session['username'] = newUser.username
         return redirect(url_for('main.home'))
     return render_template("register.html", form=form)
@@ -76,5 +77,6 @@ def login():
 
 @user_pages.route('/logout', methods=['GET','POST'])
 def logout():
-    session.pop('username')
+    session.pop('user_id', None)
+    session.pop('username', None)
     return redirect(url_for('main.home'))

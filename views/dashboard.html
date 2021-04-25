@@ -3,6 +3,15 @@
     <meta charset="UTF-8">
     <title>Plantspeak - Dashboard</title>
 
+    <h2>Dashboard</h2>
+
+    {% if plants_with_problems == 0 %}
+        <b>None</b> of your plants need attention.
+    {% elif plants_with_problems>0 %}
+        <b>{{ plants_with_problems }}</b> of your plants <b>need attention</b>.
+    {% endif %}
+
+    <h3>My Saved Plants</h3>
     {{ table }}
 
 
