@@ -31,3 +31,8 @@ class User(db.Model):
             return True
         else:
             return False
+
+    def isAdmin(self):
+        if self.type==1:
+            return True
+        return False

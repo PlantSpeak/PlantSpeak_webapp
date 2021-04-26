@@ -6,7 +6,7 @@ from models.Reading import *
 from database import db
 from wtforms import Form, BooleanField, StringField, PasswordField, SelectField, validators
 from wtforms.fields.html5 import IntegerField, DecimalField
-from flask_table import Table, Col, ButtonCol
+from flask_table import Table, Col, ButtonCol, LinkCol
 
 plant_pages = Blueprint('plants', __name__, template_folder="views")
 
@@ -29,6 +29,7 @@ class SavedListTable(BaseTable):
     condition = Col('Condition')
     alerts = Col('Alerts')
     last_seen = Col('Last Seen')
+    view = LinkCol('View', 'plants.show_plant', url_kwargs = dict(plant_id='plant_id'))
     remove_from_saved_list = ButtonCol('Remove', 'plants.saved_list_remove', url_kwargs=dict(plant_id='plant_id'), button_attrs={'class': 'btn btn-danger'})
 
 class PlantRegistrationForm(Form):
@@ -103,7 +104,7 @@ def register():
 def show_plant(plant_id):
     plant = Plant.query.filter_by(id=plant_id).one()
     latest_reading = Reading.query.filter_by(plant_id=plant.id).order_by(Reading.time.desc()).first()
-    return render_template('plant.html', plant=plant, latest_reading=latest_reading)
+    return render_template('plant.html', user=user, plant=plant, latest_reading=latest_reading)
 
 @plant_pages.route('/saved_plant_remove/<plant_id>', methods=['GET','POST'])
 def saved_list_remove(plant_id):
@@ -118,9 +119,14 @@ def dashboard():
         # user = User.query.filter_by(id=user_id)
         favourites = Favourite.query.filter_by(user_id=session.get('user_id')).all()
         favourites_records = []
+        plant_records = []
         plants_with_problems=0
         for i in favourites:
             plant = Plant.query.filter_by(id=i.plant_id).one()
+            if plant.type:
+                plant_type = getPlantType(plant.type)
+            else:
+                plant_type = "None"
             last_reading = Reading.query.filter_by(plant_id=plant.id).order_by(Reading.time.desc()).first()
             if plant.get_problems(last_reading):
                 condition="Needs Attention"
@@ -129,7 +135,7 @@ def dashboard():
                 condition="Healthy"
             last_seen = str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(last_reading.time)))
             print(last_reading.temperature)
-            favourites_records.append(dict(plant_id=i.plant_id, type=plant.type, location=plant.location,
+            favourites_records.append(dict(plant_id=i.plant_id, type=plant_type, location=plant.location,
                                       floor=plant.level, condition=condition, alerts=None, last_seen=last_seen))
         print(favourites_records)
         table = SavedListTable(favourites_records)

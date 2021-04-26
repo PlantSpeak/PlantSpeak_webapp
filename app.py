@@ -44,6 +44,9 @@ application = create_app()
 @application.before_first_request
 def prepare_db():
     db.create_all()
+    admin = User(username='admin', type=1, email="admin@plantspeak.com", password='admin')
+    db.session.add(admin)
+    db.session.commit()
 
 if __name__ == '__main__':
     application.run(debug=True, use_reloader=True)
