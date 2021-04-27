@@ -27,6 +27,7 @@ def register():
         newUser = User(password=form.password.data, username=form.username.data, email=form.email.data)
         db.session.add(newUser)
         db.session.commit()
+        session['user_id'] = newUser.id
         session['username'] = newUser.username
         return redirect(url_for('main.home'))
     return render_template("register.html", form=form)
@@ -35,13 +36,19 @@ def register():
 class CreateUserForm(Form):
     username = StringField('Username', [validators.Length(min=USERNAME_MIN_LENGTH, max=USERNAME_MAX_LENGTH)])
     email = StringField('Email Address', [validators.Length(min=EMAIL_MIN_LENGTH, max=EMAIL_MAX_LENGTH)])
+    admin = BooleanField('Give this user administrator privileges.')
 
 @user_pages.route('/create_user', methods=['GET','POST'])
 def create_user():
+    if not session.get('user_id'):
+        redirect(url_for('main.home'))
+    user = User.query.filter_by(id=session['user_id']).one()
+    if user.type != 1:
+        redirect(url_for('main.home'))
     form = CreateUserForm(request.form)
     random_password = str(uuid.uuid4())[:8]
     if request.method=="POST" and form.validate():
-        newUser = User(password=random_password, username=form.username.data, email=form.email.data)
+        newUser = User(type=int(form.admin.data), password=random_password, username=form.username.data, email=form.email.data)
         db.session.add(newUser)
         db.session.commit()
         registered_notification = Notification("PlantSpeak Registration Details", """You have successfully signed up for PlantSpeak.
@@ -76,5 +83,6 @@ def login():
 
 @user_pages.route('/logout', methods=['GET','POST'])
 def logout():
-    session.pop('username')
+    session.pop('user_id', None)
+    session.pop('username', None)
     return redirect(url_for('main.home'))

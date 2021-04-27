@@ -1,0 +1,16 @@
+{%  extends 'base.html' %}
+
+{%  block content %}
+    {% from "_formlayout.html" import generate_field %}
+    <h2>Add Plant</h2>
+    <form method="post">
+        {{ generate_field(form.plant_type) }}
+        Can't find a plant species? <a href="{{ url_for('plants.add_plant_type') }}">Add it here.</a>
+    <br>
+        {{ generate_field(form.level) }}
+    {{ generate_field(form.location) }}
+    <input type="submit" value="Submit">
+        {{error}}
+    </form>
+
+{%  endblock %}

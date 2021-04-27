@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-sm">
+        <h2>Temperature</h2>
+        <h4>{{ latest_reading.temperature }}°C</h4>
+    </div>
+    <div class="col-sm">
+        <h2>Humidity</h2>
+      <h4>{{ latest_reading.humidity }}%</h4>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm">
+        <h2>Soil Moisture (Volumetric)</h2>
+      <h4>{{ latest_reading.soil_moisture }}%</h4>
+    </div>
+    <div class="col-sm">
+        <h2>Light Intensity</h2>
+        <h4>{{ latest_reading.light_intensity }} lux</h4>
+    </div>
+  </div>
+</div>
+{% endblock %}

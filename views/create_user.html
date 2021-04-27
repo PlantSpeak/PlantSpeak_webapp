@@ -1,17 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+{% extends 'base.html' %}
+{% block content %}
       {% from "_formlayout.html" import generate_field %}
     <form method="post">
     {{ generate_field(form.username) }}
     {{ generate_field(form.email) }}
+    {{ generate_field(form.admin) }}
     <input type="submit" value="Submit">
         {{error}}
     </form>
-</head>
-<body>
-
-</body>
-</html>
+      {%  endblock %}
