@@ -104,7 +104,27 @@ def register():
 def show_plant(plant_id):
     plant = Plant.query.filter_by(id=plant_id).one()
     latest_reading = Reading.query.filter_by(plant_id=plant.id).order_by(Reading.time.desc()).first()
-    return render_template('plant.html', user=user, plant=plant, latest_reading=latest_reading)
+
+    all_readings = Reading.query.filter_by(plant_id=plant.id).order_by(Reading.time.desc()).all()
+
+    #times = all_readings
+    # times = [reading for reading in all_readings]
+    times = [reading.time for reading in all_readings]
+    temperatures = [reading.temperature for reading in all_readings]
+    humidities = [reading.humidity for reading in all_readings]
+    soil_moistures = [reading.soil_moisture for reading in all_readings]
+    # moisture_indexes = [reading.moisture_index for reading in all_readings]
+
+    # print (times)
+    # print (temperatures)
+    # print (humidities)
+    # print (soil_moistures)
+    # print (moisture_indexes)
+
+    return render_template('plant.html', plant=plant, latest_reading=latest_reading)
+    # return render_template('plant.html', plant=plant, latest_reading=latest_reading, 
+    #     times=times, temperatures=temperatures, humidities=humidities, 
+    #     soil_moistures=soil_moistures, moisture_indexes=moisture_indexes)
 
 @plant_pages.route('/saved_plant_remove/<plant_id>', methods=['GET','POST'])
 def saved_list_remove(plant_id):
