@@ -13,6 +13,7 @@ class Plant(db.Model):
     type = db.Column(db.Integer)
     level = db.Column(db.Integer)
     location = db.Column(db.String(LOCATION_MAX_LENGTH))
+    mac_address = db.Column(db.String)
 
     def __init__(self, **kwargs):
         super(Plant, self).__init__(**kwargs)

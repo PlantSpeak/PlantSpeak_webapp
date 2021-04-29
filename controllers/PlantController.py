@@ -3,6 +3,7 @@ from models.Plant import *
 from models.PlantType import *
 from models.Favourite import *
 from models.Reading import *
+from models.Device import *
 from database import db
 from wtforms import Form, BooleanField, StringField, PasswordField, SelectField, validators
 from wtforms.fields.html5 import IntegerField, DecimalField
@@ -12,6 +13,14 @@ plant_pages = Blueprint('plants', __name__, template_folder="views")
 
 class BaseTable(Table):
     classes = ['table', 'table-striped']
+
+class DeviceTable(BaseTable):
+    id = Col('Device ID')
+    mac_address = Col('MAC Address')
+    last_seen = Col('Last Seen')
+    label = Col('label')
+    location = Col('location')
+    favourite = ButtonCol('Add Plant', 'plants.register', url_kwargs=dict(id='id'), button_attrs={'class': 'btn btn-success'})
 
 class PlantTable(BaseTable):
     plant_id = Col('Plant ID')
@@ -29,7 +38,7 @@ class SavedListTable(BaseTable):
     condition = Col('Condition')
     alerts = Col('Alerts')
     last_seen = Col('Last Seen')
-    view = LinkCol('View', 'plants.show_plant', url_kwargs = dict(plant_id='plant_id'))
+    view = LinkCol('View', 'plants.show_plant', url_kwargs=dict(plant_id='plant_id'))
     remove_from_saved_list = ButtonCol('Remove', 'plants.saved_list_remove', url_kwargs=dict(plant_id='plant_id'), button_attrs={'class': 'btn btn-danger'})
 
 class PlantRegistrationForm(Form):
@@ -88,12 +97,17 @@ def show_plants():
     table = PlantTable(plant_records)
     return render_template("plants.html", table=table)
 
-@plant_pages.route('/register/plant', methods=['GET','POST'])
-def register():
+@plant_pages.route('/register/plant/<id>', methods=['GET','POST'])
+def register(id):
+    device = Device.query.filter_by(id=id).first()
+    if device.location:
+
     form = PlantRegistrationForm(request.form)
     form.plant_type.choices = [(i.id, i.name) for i in PlantType.query.all()]
     if request.method=="POST" and form.validate():
         newPlant = Plant(type=form.plant_type.data, level=form.level.data, location=form.location.data)
+        device = Device.query.filter_by(id=id).one()
+        device.registered = 1
         db.session.add(newPlant)
         db.session.commit()
         #session['username'] = newUser.username
@@ -184,3 +198,14 @@ def add_plant_type():
         db.session.commit()
         return redirect(url_for('main.home'))
     return render_template("add_plant_type.html", form=form)
+
+@plant_pages.route('/devices', methods=['GET','POST'])
+def show_devices():
+    devices = Device.query.all()
+    devices_table_items = []
+    for i in devices:
+        last_seen = str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(i.last_seen)))
+        devices_table_items.append(dict(id=i.id, mac_address=i.mac_address, last_seen=last_seen,
+                                        label=i.label, location=i.location))
+    table = DeviceTable(devices_table_items)
+    return render_template("device.html", table=table)
