@@ -10,15 +10,16 @@ class Reading(db.Model):
     humidity = db.Column(db.Float)
     light_intensity = db.Column(db.Float)
     soil_moisture = db.Column(db.Float)
+    mac_address = db.Column(db.String(20))
 
-    def __init__(self, id, time, temperature, humidity, light_intensity, soil_moisture, moisture_index):
-        self.id = id
+    def __init__(self, time, temperature, humidity, light_intensity, soil_moisture, moisture_index, mac_address):
         self.time = time
         self.temperature = temperature
         self.humidity = humidity
         self.light_intensity = light_intensity
         self.soil_moisture = soil_moisture
         self.moisture_index = moisture_index
+        self.mac_address = mac_address
 
     # TODO
     def getMoistureIndex(self):

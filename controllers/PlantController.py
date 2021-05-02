@@ -20,7 +20,7 @@ class DeviceTable(BaseTable):
     last_seen = Col('Last Seen')
     label = Col('label')
     location = Col('location')
-    favourite = ButtonCol('Add Plant', 'plants.register', url_kwargs=dict(id='id'), button_attrs={'class': 'btn btn-success'})
+    favourite = ButtonCol('Add Plant', 'plants.register', url_kwargs=dict(device_id='id'), button_attrs={'class': 'btn btn-success'})
 
 class PlantTable(BaseTable):
     plant_id = Col('Plant ID')
@@ -40,6 +40,13 @@ class SavedListTable(BaseTable):
     last_seen = Col('Last Seen')
     view = LinkCol('View', 'plants.show_plant', url_kwargs=dict(plant_id='plant_id'))
     remove_from_saved_list = ButtonCol('Remove', 'plants.saved_list_remove', url_kwargs=dict(plant_id='plant_id'), button_attrs={'class': 'btn btn-danger'})
+
+class ReadingsTable(BaseTable):
+    time = Col('Time')
+    temperature = Col('Temperature (°C)')
+    humidity = Col('Humidity (%)')
+    soil_moisture = Col('Soil Moisture (%)')
+    light_intensity = Col('Light Intensity (lux)')
 
 class PlantRegistrationForm(Form):
     #plantname = StringField('Plant Name', [validators.Length(min=NAME_MIN_LENGTH, max=NAME_MAX_LENGTH)])
@@ -97,28 +104,90 @@ def show_plants():
     table = PlantTable(plant_records)
     return render_template("plants.html", table=table)
 
-@plant_pages.route('/register/plant/<id>', methods=['GET','POST'])
-def register(id):
-    device = Device.query.filter_by(id=id).first()
-    if device.location:
-
+@plant_pages.route('/register/plant/<device_id>', methods=['GET','POST'])
+def register(device_id):
+    device = Device.query.filter_by(id=device_id).first()
     form = PlantRegistrationForm(request.form)
     form.plant_type.choices = [(i.id, i.name) for i in PlantType.query.all()]
     if request.method=="POST" and form.validate():
-        newPlant = Plant(type=form.plant_type.data, level=form.level.data, location=form.location.data)
-        device = Device.query.filter_by(id=id).one()
+        newPlant = Plant(type=form.plant_type.data, level=form.level.data, location=form.location.data, mac_address=device.mac_address)
+        device = Device.query.filter_by(id=device_id).one()
         device.registered = 1
         db.session.add(newPlant)
         db.session.commit()
-        #session['username'] = newUser.username
         return redirect(url_for('main.home'))
     return render_template("register_plant.html", form=form)
+
+import pygal
+from pygal.style import Style
+from datetime import datetime, timedelta
+
+def prepare_readings_chart(attribute, attribute_name, readings, x_label_count, y_min, y_max, x_label, y_label, line_colour, logarithmic):
+    style = Style(font_family="Arial",  colors=[line_colour], background='transparent')
+    temp_chart = pygal.DateTimeLine(x_label_rotation=20, range=(y_min, y_max),
+                               show_minor_x_labels=False, show_major_x_labels=True,
+                               x_labels_major_count=x_label_count, show_legend=False, style=style,
+                                    x_title=x_label, y_title=y_label, logarithmic=logarithmic)
+    temp_chart.add(attribute_name, [(datetime.fromtimestamp(i.time), getattr(i, attribute)) for i in readings])
+    chart = temp_chart.render_data_uri()
+    return chart
+
+def prepare_gauge_indicator(attribute, attribute_name, latest_reading, min_val, max_val, val_formatter, colour, logarithmic):
+    style = Style(font_family="Arial",  colors=[colour], value_font_size=36, label_font_size=24, title_font_size=48,
+                  background='transparent'
+                  )
+    gauge = pygal.SolidGauge(
+        half_pie=True, inner_radius=0.70,
+        style=style, show_legend=False, margin_top=-200, margin_bottom=-100, logarithmic=logarithmic)
+    gauge.title=attribute_name
+    gauge.add('Temperature', [{'value':  getattr(latest_reading, attribute), 'min_value': min_val, 'max_value': max_val}], formatter=val_formatter)
+    return gauge.render(is_unicode=True)
 
 @plant_pages.route('/plant/<plant_id>')
 def show_plant(plant_id):
     plant = Plant.query.filter_by(id=plant_id).one()
-    latest_reading = Reading.query.filter_by(plant_id=plant.id).order_by(Reading.time.desc()).first()
-    return render_template('plant.html', user=user, plant=plant, latest_reading=latest_reading)
+    plant_type = PlantType.query.filter_by(id=plant.type).one().name
+    latest_reading = Reading.query.filter_by(mac_address=plant.mac_address).order_by(Reading.time.desc()).first()
+
+    readings = Reading.query.filter_by(mac_address=plant.mac_address).order_by(Reading.time.desc()).limit(100)
+    temperature_chart = prepare_readings_chart('temperature', 'Temperature', readings, 10, 0, 50, "Time", "Temperature (°C)", "#FF0000", False)
+    humidity_chart = prepare_readings_chart('humidity', 'Humidity', readings, 10, 0, 100, "Time", "Humidity (%)", "#0000FF", False)
+    soil_moisture_chart = prepare_readings_chart('soil_moisture', 'Soil Moisture', readings, 10, 0, 100, "Time", "Volumetric Soil Moisture (%)", "#0000FF", False)
+    light_intensity_chart = prepare_readings_chart('light_intensity', 'Light Intensity', readings, 10, 0, 1000, "Time", "Light Intesity (lux)", "#FFAA00", True)
+
+    percent_formatter = lambda x: '{:.10g}%'.format(x)
+    temperature_formatter = lambda x: u'{:.10g}°C'.format(x)
+    lux_formatter = lambda x: u'{:.10g} lux'.format(x)
+
+    temp_gauge = prepare_gauge_indicator('temperature',"Temperature",latest_reading,0,50,temperature_formatter,"#FF0000", False)
+    humidity_gauge = prepare_gauge_indicator('humidity',"Humidity",latest_reading,0,100,percent_formatter,"#0000FF", False)
+    soil_moisture_gauge = prepare_gauge_indicator('soil_moisture',"Soil Moisture",latest_reading,0,100,percent_formatter,"#0000FF", False)
+    light_intensity_gauge = prepare_gauge_indicator('light_intensity',"Light Intensity",latest_reading,0,1000,lux_formatter,"#FA0000", True)
+
+    # gauge.add('Humidity', [{'value':  latest_reading.humidity, 'min_value': 0, 'max_value': 100}], formatter=percent_formatter)
+    # gauge.add('Soil Moisture', [{'value':  latest_reading.soil_moisture, 'min_value': 0, 'max_value': 50}], formatter=percent_formatter)
+    # gauge.add('Light Intensity', [{'value': latest_reading.light_intensity, 'min_value': 0, 'max_value':1000}])
+    # temp_gauge = gauge.render(is_unicode=True)
+
+    readings_records = []
+    for i in readings:
+        readings_records.append(dict(
+            temperature=i.temperature,
+            humidity=i.humidity,
+            soil_moisture=i.soil_moisture,
+            light_intensity=i.light_intensity,
+            time=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(i.time))
+        ))
+    table = ReadingsTable(readings_records)
+
+    return render_template('plant.html', plant=plant, latest_reading=latest_reading,
+                           temperature_chart=temperature_chart, humidity_chart=humidity_chart,
+                           soil_moisture_chart=soil_moisture_chart, light_intensity_chart=light_intensity_chart,
+                           temp_gauge=temp_gauge, humidity_gauge=humidity_gauge,
+                           soil_moisture_gauge=soil_moisture_gauge,
+                           light_intensity_gauge=light_intensity_gauge,
+                           table=table,
+                           plant_type=plant_type)
 
 @plant_pages.route('/saved_plant_remove/<plant_id>', methods=['GET','POST'])
 def saved_list_remove(plant_id):
@@ -133,7 +202,6 @@ def dashboard():
         # user = User.query.filter_by(id=user_id)
         favourites = Favourite.query.filter_by(user_id=session.get('user_id')).all()
         favourites_records = []
-        plant_records = []
         plants_with_problems=0
         for i in favourites:
             plant = Plant.query.filter_by(id=i.plant_id).one()
@@ -141,16 +209,38 @@ def dashboard():
                 plant_type = getPlantType(plant.type)
             else:
                 plant_type = "None"
-            last_reading = Reading.query.filter_by(plant_id=plant.id).order_by(Reading.time.desc()).first()
-            if plant.get_problems(last_reading):
-                condition="Needs Attention"
-                plants_with_problems+=1
+            last_reading = Reading.query.filter_by(mac_address=plant.mac_address).order_by(Reading.time.desc()).first()
+            problems = plant.get_problems(last_reading)
+            problem_list = []
+            if problems:
+                condition = "Needs Attention"
+                plants_with_problems += 1
+                if problems['temperature_low']:
+                    problem_list.append("Low Temperature")
+                if problems['temperature_high']:
+                    problem_list.append("High Temperature")
+                if problems['humidity_low']:
+                    problem_list.append("Low Humidity")
+                if problems['humidity_high']:
+                    problem_list.append("High Humidity")
+                if problems['moisture_low']:
+                    problem_list.append("Low Soil Moisture")
+                if problems['moisture_high']:
+                    problem_list.append("High Soil Moisture")
+                if problems['light_intensity_low']:
+                    problem_list.append("Too little light")
+                if problems['light_intensity_high']:
+                    problem_list.append("Too light")
             else:
-                condition="Healthy"
+                condition = "Healthy"
+            if not problem_list:
+                problem_list = "None"
+
+
             last_seen = str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(last_reading.time)))
             print(last_reading.temperature)
             favourites_records.append(dict(plant_id=i.plant_id, type=plant_type, location=plant.location,
-                                      floor=plant.level, condition=condition, alerts=None, last_seen=last_seen))
+                                      floor=plant.level, condition=condition, alerts=problem_list, last_seen=last_seen))
         print(favourites_records)
         table = SavedListTable(favourites_records)
         return render_template('dashboard.html', table=table, plants_with_problems=plants_with_problems)

@@ -26,7 +26,7 @@ class Plant(db.Model):
         return False
 
     def temperature_too_high(self, reading, plant_type):
-        if reading.temperature>plant_type.min_temp:
+        if reading.temperature>plant_type.max_temp:
             return True
         return False
 
@@ -70,3 +70,8 @@ class Plant(db.Model):
                         moisture_high=self.soil_moisture_too_high(reading, plant_type),
                         light_intensity_low=self.light_intensity_too_low(reading, plant_type),
                         light_intensity_high=self.light_intensity_too_high(reading, plant_type))
+        for i in problems.values():
+            if i:
+                print(problems)
+                return problems
+        return None

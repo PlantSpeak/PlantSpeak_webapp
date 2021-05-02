@@ -1,25 +1,67 @@
 {% extends 'base.html' %}
 {% block content %}
+
+<meta http-equiv="refresh" content="60" >
+
+<script type="text/javascript" src="http://kozea.github.com/pygal.js/javascripts/svg.jquery.js"></script>
+<script type="text/javascript" src="http://kozea.github.com/pygal.js/javascripts/pygal-tooltips.js"></script>
+
+
+<h2>Plant Details</h2>
+<hr>
+<p><b>Type: </b> {{plant_type}}</p>
+<p><b>Location: </b> {{plant.location}}</p>
+<p><b>MAC Address: </b> {{plant.mac_address}}</p>
+
+        <h2>Latest Reading</h2>
+<hr>
 <div class="container">
   <div class="row">
     <div class="col-sm">
-        <h2>Temperature</h2>
-        <h4>{{ latest_reading.temperature }}°C</h4>
+            <embed type="image/svg+xml"> {{temp_gauge|safe}}
     </div>
     <div class="col-sm">
-        <h2>Humidity</h2>
-      <h4>{{ latest_reading.humidity }}%</h4>
+<embed type="image/svg+xml"> {{humidity_gauge|safe}}
     </div>
   </div>
   <div class="row">
     <div class="col-sm">
-        <h2>Soil Moisture (Volumetric)</h2>
-      <h4>{{ latest_reading.soil_moisture }}%</h4>
+<embed type="image/svg+xml"> {{soil_moisture_gauge|safe}}
     </div>
     <div class="col-sm">
-        <h2>Light Intensity</h2>
-        <h4>{{ latest_reading.light_intensity }} lux</h4>
+<embed type="image/svg+xml"> {{light_intensity_gauge|safe}}
     </div>
   </div>
 </div>
+        <h2>Charts</h2>
+<hr>
+        <div class="gauge-container">
+        </div>
+
+    <div class="graph-container">
+<ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-temperature-tab" data-bs-toggle="pill" data-bs-target="#pills-temperature" type="button" role="tab" aria-controls="pills-temperature" aria-selected="false">Temperature</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-humidity-tab" data-bs-toggle="pill" data-bs-target="#pills-humidity" type="button" role="tab" aria-controls="pills-humidity" aria-selected="false">Humidity</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-soil-moisture-tab" data-bs-toggle="pill" data-bs-target="#pills-soil-moisture" type="button" role="tab" aria-controls="pills-soil-moisture" aria-selected="false">Soil Moisture</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-light-intensity-tab" data-bs-toggle="pill" data-bs-target="#pills-light-intensity" type="button" role="tab" aria-controls="pills-light-intensity" aria-selected="false">Light Intensity</button>
+  </li>
+</ul>
+<div class="tab-content" id="pills-tabContent">
+  <div class="tab-pane fade show active" id="pills-temperature" role="tabpanel" aria-labelledby="pills-temperature-tab"><embed type="image/svg+xml" src={{temperature_chart|safe}} style='max-width:1000px'/></div>
+  <div class="tab-pane fade" id="pills-humidity" role="tabpanel" aria-labelledby="pills-humidity-tab"><embed type="image/svg+xml" src={{humidity_chart|safe}} style='max-width:1000px'/></div>
+  <div class="tab-pane fade" id="pills-soil-moisture" role="tabpanel" aria-labelledby="pills-soil-moisture-tab"><embed type="image/svg+xml" src={{soil_moisture_chart|safe}} style='max-width:1000px'/></div>
+  <div class="tab-pane fade" id="pills-light-intensity" role="tabpanel" aria-labelledby="pills-light-intensity-tab"><embed type="image/svg+xml" src={{light_intensity_chart|safe}} style='max-width:1000px'/></div>
+</div>
+    </div>
+
+<h2>Readings</h2>
+        {{table}}
+
 {% endblock %}

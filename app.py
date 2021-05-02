@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, Blueprint, session
 from controllers.MainController import main_pages
 from controllers.UserController import user_pages
@@ -6,6 +8,8 @@ import flask_sqlalchemy
 from database import bcrypt, db
 from mail_tool import mail
 from mqtt_tool import mqtt
+
+from models.Reading import *
 
 from controllers.UserController import *
 
@@ -72,23 +76,44 @@ class MacAdressValidationForm(Form):
 
 @mqtt.on_connect()
 def on_mqtt_connect(client, userdata, flags, rc):
-    mqtt.subscribe('test')
+    mqtt.subscribe('SmartPlant_pairing')
+    mqtt.subscribe('SmartPlant')
 
 @mqtt.on_message()
 def handle_mqtt_message(client, userdata, message):
-    msg = message.payload.decode()
-    print(msg)
-    macform = MacAdressValidationForm()
-    macform.addr.data = msg
-    if macform.validate():
+    if message.topic == "SmartPlant_pairing":
+        msg = message.payload.decode()
+        print(msg)
+        macform = MacAdressValidationForm()
+        macform.addr.data = msg
+        if macform.validate():
+            with application.app_context():
+                found = Device.query.filter_by(mac_address=msg).first()
+                if not found:
+                    device = Device(msg, time.time())
+                    db.session.add(device)
+                else:
+                    found.last_seen = time.time()
+                db.session.commit()
+    elif message.topic == "SmartPlant":
+        msg = message.payload.decode()
+        print(msg)
+        reading_data = json.loads(msg)
+        print(reading_data)
         with application.app_context():
-            found = Device.query.filter_by(mac_address=msg).first()
-            if not found:
-                device = Device(msg, time.time())
-                db.session.add(device)
+            if Plant.query.filter_by(mac_address=reading_data["mac_address"]).one_or_none() \
+                    and Reading.query.filter_by(time=reading_data["time"], mac_address=reading_data["mac_address"]).count()==0:
+                reading = Reading(time=reading_data["time"],
+                                  temperature=reading_data["temp"],
+                                  humidity=reading_data["humidity"],
+                                  light_intensity=reading_data["light_intensity"],
+                                  soil_moisture=reading_data['soil_moisture']*100, # CONVERT TO PERCENTAGE for database.
+                                  moisture_index=reading_data["moisture_index"],
+                                  mac_address=reading_data["mac_address"])
+                db.session.add(reading)
+                db.session.commit()
             else:
-                found.last_seen = time.time()
-            db.session.commit()
+                print("Similar recording.")
 
 
 
