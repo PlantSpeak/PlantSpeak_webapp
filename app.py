@@ -68,9 +68,10 @@ application = create_app()
 @application.before_first_request
 def prepare_db():
     db.create_all()
-    admin = User(username='admin', type=1, email="admin@plantspeak.com", password='admin')
-    db.session.add(admin)
-    db.session.commit()
+    if not User.query.filter_by(username='admin'):
+        admin = User(username='admin', type=1, email="admin@plantspeak.com", password='admin')
+        db.session.add(admin)
+        db.session.commit()
 class MacAdressValidationForm(Form):
     addr = StringField(validators=[DataRequired(), MacAddress()])
 
