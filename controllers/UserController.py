@@ -3,6 +3,7 @@ from models.User import *
 from models.Notification import *
 from database import db
 from wtforms import Form, BooleanField, StringField, PasswordField, validators
+from wtforms.fields.html5 import EmailField
 import flask_bcrypt
 
 user_pages = Blueprint('users', __name__, template_folder="views")
@@ -13,23 +14,31 @@ class LoginForm(Form):
 
 class RegistrationForm(Form):
     username = StringField('Username', [validators.Length(min=USERNAME_MIN_LENGTH, max=USERNAME_MAX_LENGTH)])
-    email = StringField('Email Address', [validators.Length(min=EMAIL_MIN_LENGTH, max=EMAIL_MAX_LENGTH)])
+    email = EmailField('Email Address', [validators.Length(min=EMAIL_MIN_LENGTH, max=EMAIL_MAX_LENGTH), validators.Email()])
     password = PasswordField('New Password', [
         validators.DataRequired(),
         validators.EqualTo('confirm_password', message='Passwords must match')
     ])
     confirm_password = PasswordField('Repeat Password')
 
+def userExists(username):
+    if User.query.filter_by(username=username).all():
+        return True
+    return False
+
 @user_pages.route('/register', methods=['GET','POST'])
 def register():
     form = RegistrationForm(request.form)
     if request.method=="POST" and form.validate():
-        newUser = User(password=form.password.data, username=form.username.data, email=form.email.data)
-        db.session.add(newUser)
-        db.session.commit()
-        session['user_id'] = newUser.id
-        session['username'] = newUser.username
-        return redirect(url_for('main.home'))
+        if not userExists(form.username.data):
+            newUser = User(password=form.password.data, username=form.username.data, email=form.email.data)
+            db.session.add(newUser)
+            db.session.commit()
+            session['user_id'] = newUser.id
+            session['username'] = newUser.username
+            return redirect(url_for('main.home'))
+        else:
+            form.username.errors.append("That username is already taken.")
     return render_template("register.html", form=form)
 
 
@@ -70,6 +79,7 @@ def login():
                 user = User.query.filter_by(username=form.username.data).first()
                 if user:
                     if user.login(form.password.data):
+                        session['password_attempts']=5
                         return redirect(url_for('main.home'))
                     else:
                         session['password_attempts']-=1

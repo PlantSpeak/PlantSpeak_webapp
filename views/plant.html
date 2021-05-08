@@ -1,25 +1,223 @@
 {% extends 'base.html' %}
 {% block content %}
+
+<meta charset="UTF-8">
+<title>Plantspeak - Plant Detail</title>
+
+<meta http-equiv="refresh" content="60">
+
+<script type="text/javascript" src="http://kozea.github.com/pygal.js/javascripts/svg.jquery.js"></script>
+<script type="text/javascript" src="http://kozea.github.com/pygal.js/javascripts/pygal-tooltips.js"></script>
+
+
+<h1>Plant Details</h1>
+<hr>
+<p><b>Type: </b> {{plant_type}}</p>
+<p><b>Location: </b> {{plant.location}}</p>
+<p><b>MAC Address: </b> {{plant.mac_address}}</p>
+
+<h2>Latest Reading</h2>
+<hr>
 <div class="container">
-  <div class="row">
-    <div class="col-sm">
-        <h2>Temperature</h2>
-        <h4>{{ latest_reading.temperature }}°C</h4>
+    <div class="row">
+        <div class="col-sm">
+            <embed type="image/svg+xml"> {{temp_gauge|safe}}
+        </div>
+        <div class="col-sm">
+            <embed type="image/svg+xml"> {{humidity_gauge|safe}}
+        </div>
     </div>
-    <div class="col-sm">
-        <h2>Humidity</h2>
-      <h4>{{ latest_reading.humidity }}%</h4>
+    <div class="row">
+        <div class="col-sm">
+            <embed type="image/svg+xml"> {{soil_moisture_gauge|safe}}
+        </div>
+        <div class="col-sm">
+            <embed type="image/svg+xml"> {{light_intensity_gauge|safe}}
+        </div>
     </div>
-  </div>
-  <div class="row">
-    <div class="col-sm">
-        <h2>Soil Moisture (Volumetric)</h2>
-      <h4>{{ latest_reading.soil_moisture }}%</h4>
-    </div>
-    <div class="col-sm">
-        <h2>Light Intensity</h2>
-        <h4>{{ latest_reading.light_intensity }} lux</h4>
-    </div>
-  </div>
 </div>
+
+
+<h2>History</h2>
+    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-recent-tab" data-bs-toggle="pill" data-bs-target="#pills-recent"
+                    type="button" role="tab" aria-controls="pills-recent" aria-selected="false">Recent
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-weekly-tab" data-bs-toggle="pill" data-bs-target="#pills-weekly"
+                    type="button" role="tab" aria-controls="pills-weekly" aria-selected="false">Week
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-month-tab" data-bs-toggle="pill" data-bs-target="#pills-monthly"
+                    type="button" role="tab" aria-controls="pills-monthly" aria-selected="false">Month
+            </button>
+        </li>
+    </ul>
+    <hr>
+
+<div class="tab-content" id="pills-time-select-tab">
+    <!-- Recent Data -->
+    <div class="tab-pane fade show active" id="pills-recent" role="tabpanel"
+                 aria-labelledby="pills-recent-tab">
+        <h3>Charts</h3>
+        <ul class="nav nav-pills mb-3" id="pills-recent-graph-select" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-recent-temperature-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-recent-temperature" type="button" role="tab" aria-controls="pills-recent-temperature"
+                        aria-selected="false">Temperature
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-recent-humidity-tab" data-bs-toggle="pill" data-bs-target="#pills-recent-humidity"
+                        type="button" role="tab" aria-controls="pills-humidity" aria-selected="false">Humidity
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-recent-soil-moisture-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-recent-soil-moisture" type="button" role="tab" aria-controls="pills-recent-soil-moisture"
+                        aria-selected="false">Soil Moisture
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-recent-light-intensity-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-recent-light-intensity" type="button" role="tab"
+                        aria-controls="pills-recent-light-intensity" aria-selected="false">Light Intensity
+                </button>
+            </li>
+        </ul>
+
+        <div class="graph-container">
+                <div class="tab-content" id="pills-tabContent">
+                    <div class="tab-pane fade show active" id="pills-recent-temperature" role="tabpanel"
+                         aria-labelledby="pills-recent-temperature-tab">
+                        <embed type="image/svg+xml" src={{temperature_chart|safe}} style='max-width:1000px'/>
+                    </div>
+                    <div class="tab-pane fade" id="pills-recent-humidity" role="tabpanel" aria-labelledby="pills-recent-humidity-tab">
+                        <embed type="image/svg+xml" src={{humidity_chart|safe}} style='max-width:1000px'/>
+                    </div>
+                    <div class="tab-pane fade" id="pills-recent-soil-moisture" role="tabpanel"
+                         aria-labelledby="pills-recent-soil-moisture-tab">
+                        <embed type="image/svg+xml" src={{soil_moisture_chart|safe}} style='max-width:1000px'/>
+                    </div>
+                    <div class="tab-pane fade" id="pills-recent-light-intensity" role="tabpanel"
+                         aria-labelledby="pills-recent-light-intensity-tab">
+                        <embed type="image/svg+xml" src={{light_intensity_chart|safe}} style='max-width:1000px'/>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+    <!-- Weekly Data -->
+    <div class="tab-pane fade show" id="pills-weekly" role="tabpanel"
+         aria-labelledby="pills-weekly-tab">
+        <h3>Charts</h3>
+        <ul class="nav nav-pills mb-3" id="pills-weekly-graph-select" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-weekly-temperature-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-weekly-temperature" type="button" role="tab" aria-controls="pills-weekly-temperature"
+                        aria-selected="false">Temperature
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-weekly-humidity-tab" data-bs-toggle="pill" data-bs-target="#pills-weekly-humidity"
+                        type="button" role="tab" aria-controls="pills-weekly-humidity" aria-selected="false">Humidity
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-weekly-soil-moisture-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-weekly-soil-moisture" type="button" role="tab" aria-controls="pills-weekly-soil-moisture"
+                        aria-selected="false">Soil Moisture
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-weekly-light-intensity-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-weekly-light-intensity" type="button" role="tab"
+                        aria-controls="pills-weekly-light-intensity" aria-selected="false">Light Intensity
+                </button>
+            </li>
+        </ul>
+
+        <div class="graph-container">
+            <div class="tab-content" id="pills-tabContent">
+        <div class="tab-pane fade show active" id="pills-weekly-temperature" role="tabpanel"
+             aria-labelledby="pills-weekly-temperature-tab">
+            <embed type="image/svg+xml" src={{week_temperature_chart|safe}} style='max-width:1000px'/>
+        </div>
+        <div class="tab-pane fade" id="pills-weekly-humidity" role="tabpanel" aria-labelledby="pills-weekly-humidity-tab">
+            <embed type="image/svg+xml" src={{week_humidity_chart|safe}} style='max-width:1000px'/>
+        </div>
+        <div class="tab-pane fade" id="pills-weekly-soil-moisture" role="tabpanel"
+             aria-labelledby="pills-weekly-soil-moisture-tab">
+            <embed type="image/svg+xml" src={{week_soil_moisture_chart|safe}} style='max-width:1000px'/>
+        </div>
+        <div class="tab-pane fade" id="pills-weekly-light-intensity" role="tabpanel"
+             aria-labelledby="pills-weekly-light-intensity-tab">
+            <embed type="image/svg+xml" src={{week_light_intensity_chart|safe}} style='max-width:1000px'/>
+        </div>
+    </div></div>
+    </div>
+
+    <!-- monthly Data -->
+    <div class="tab-pane fade show" id="pills-monthly" role="tabpanel"
+         aria-labelledby="pills-monthly-tab">
+        <h3>Charts</h3>
+        <ul class="nav nav-pills mb-3" id="pills-monthly-graph-select" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-monthly-temperature-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-monthly-temperature" type="button" role="tab"
+                        aria-controls="pills-monthly-temperature"
+                        aria-selected="false">Temperature
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-monthly-humidity-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-monthly-humidity"
+                        type="button" role="tab" aria-controls="pills-monthly-humidity" aria-selected="false">Humidity
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-monthly-soil-moisture-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-monthly-soil-moisture" type="button" role="tab"
+                        aria-controls="pills-monthly-soil-moisture"
+                        aria-selected="false">Soil Moisture
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-monthly-light-intensity-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-monthly-light-intensity" type="button" role="tab"
+                        aria-controls="pills-monthly-light-intensity" aria-selected="false">Light Intensity
+                </button>
+            </li>
+        </ul>
+
+        <div class="graph-container">
+            <div class="tab-content" id="pills-tabContent">
+                <div class="tab-pane fade show active" id="pills-monthly-temperature" role="tabpanel"
+                     aria-labelledby="pills-monthly-temperature-tab">
+                    <embed type="image/svg+xml" src={{month_temperature_chart|safe}} style='max-width:1000px'/>
+                </div>
+                <div class="tab-pane fade" id="pills-monthly-humidity" role="tabpanel"
+                     aria-labelledby="pills-monthly-humidity-tab">
+                    <embed type="image/svg+xml" src={{month_humidity_chart|safe}} style='max-width:1000px'/>
+                </div>
+                <div class="tab-pane fade" id="pills-monthly-soil-moisture" role="tabpanel"
+                     aria-labelledby="pills-monthly-soil-moisture-tab">
+                    <embed type="image/svg+xml" src={{month_soil_moisture_chart|safe}} style='max-width:1000px'/>
+                </div>
+                <div class="tab-pane fade" id="pills-monthly-light-intensity" role="tabpanel"
+                     aria-labelledby="pills-monthly-light-intensity-tab">
+                    <embed type="image/svg+xml" src={{month_light_intensity_chart|safe}} style='max-width:1000px'/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<embed type="image/svg+xml" src={{da|safe}} style='max-width:1000px'/>
+<h3>Readings</h3>
+{{table}}
+
 {% endblock %}

@@ -13,7 +13,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.Integer)
     # signed_up = db.Column(db.Time)
-    username = db.Column(db.String(USERNAME_MAX_LENGTH))
+    username = db.Column(db.String(USERNAME_MAX_LENGTH), unique=True)
     email = db.Column(db.String(EMAIL_MAX_LENGTH))
     password_hash=db.Column(db.String(256))
     password_salt = db.Column(db.String(36)) # 36 is length of uuid

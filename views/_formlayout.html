@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 
 {% macro generate_field(field) %}
-    <label>  {{ field.label }}</label>
-    {{ field(**kwargs)|safe }}<br>
+    {{ field.label(for_="form-control", class_="text-info")}}
+    {{ field(class_="form-control")|safe }}<br>
     {%  for i in field.errors  %}
         {{ i }}<br>
     {%  endfor %}
