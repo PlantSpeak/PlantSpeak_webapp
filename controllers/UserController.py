@@ -60,11 +60,11 @@ def create_user():
         newUser = User(type=int(form.admin.data), password=random_password, username=form.username.data, email=form.email.data)
         db.session.add(newUser)
         db.session.commit()
-        registered_notification = Notification("PlantSpeak Registration Details", """You have successfully signed up for PlantSpeak.
+        registered_notification = Notification(newUser.id, None, "PlantSpeak Registration Details", """You have successfully signed up for PlantSpeak.
          Your login details are as follows:
          USERNAME: %s
          PASSWORD %s""" % (newUser.username, random_password), newUser.email)
-        registered_notification.sendEmail()
+        registered_notification.send()
         return redirect(url_for('home'))
     return render_template("create_user.html", form=form)
 

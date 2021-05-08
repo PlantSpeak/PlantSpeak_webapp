@@ -42,16 +42,16 @@ def watering_reminder_job(plant_id, user_id):
         plant_type = PlantType.query.filter_by(id=plant.type).one_or_none()
         user = User.query.filter_by(id=user_id).one_or_none()
         if plant is not None:
-            notification = Notification("Watering reminder from PlantSpeak",
+            notification = Notification(user_id, plant_id, "Watering reminder from PlantSpeak",
                                         watering_message %(user.username,
                                                          plant_type.name,
                                                          plant.location,
-                                                         plant.level, "site"), "jyelake@hotmail.com"
+                                                         plant.level, "site"), user.email
                                                          # plant.site),
                                         )
             db.session.add(notification)
             db.session.commit()
-            notification.sendEmail()
+            notification.send()
 
         favourite= Favourite.query.filter_by(plant_id=plant_id, user_id=user_id).one()
         favourite.last_watering_reminder = time.time()
@@ -66,7 +66,32 @@ def watering_reminder_job(plant_id, user_id):
 
     print("Sent Email!")
 
-# def plant_health_alert(plant_id, user_id, plant_problems):
+def last_notification(favourite):
+    last = Notification.query.filter_by(user_id=favourite.user_id,
+                                        plant_id=favourite.plant_id).order_by(Notification.time.desc()).first()
+    if last:
+        return last.time
+    return None
+
+
+SAME_PLANT_NOTIFICATION_COOLDOWN = 3600*4 # 4 Hours between notifications for a single plant.
+
+def plant_health_alert(plant, plant_problems):
+    plant_type = PlantType.query.filter_by(id=plant.type).one()
+    for i in Favourite.query.filter_by(plant_id=plant.id).all():
+        if i is not None:
+            if last_notification(i) is not None:
+                if time.time()-last_notification(i)<SAME_PLANT_NOTIFICATION_COOLDOWN:
+                    return
+            message = "Problems with %s located on level %d, %s:\n"%(plant_type.name,plant.level,plant.location)
+            for j in plant_problems.keys():
+                if plant_problems[j]:
+                    message+="- %s\n"%j
+            user = User.query.filter_by(id=i.user_id).first()
+            notification = Notification(i.user_id, plant.id, "A '%s' has problems"%plant_type.name, message, user.email)
+            notification.send()
+            db.session.add(notification)
+            db.session.commit()
 
 class MacAdressValidationForm(Form):
     addr = StringField(validators=[DataRequired(), MacAddress()])
@@ -96,8 +121,8 @@ def handle_mqtt_message(client, userdata, message):
         reading_data = json.loads(msg)
         print(reading_data)
         with application.app_context():
-            if Plant.query.filter_by(mac_address=reading_data["mac_address"]).one_or_none() \
-                    and Reading.query.filter_by(time=reading_data["time"], mac_address=reading_data["mac_address"]).count()==0:
+            plant = Plant.query.filter_by(mac_address=reading_data["mac_address"]).one_or_none()
+            if plant and Reading.query.filter_by(time=reading_data["time"], mac_address=reading_data["mac_address"]).count()==0:
                 reading = Reading(time=reading_data["time"],
                                   temperature=reading_data["temp"],
                                   humidity=reading_data["humidity"],
@@ -105,6 +130,7 @@ def handle_mqtt_message(client, userdata, message):
                                   soil_moisture=reading_data['soil_moisture']*100, # CONVERT TO PERCENTAGE for database.
                                   moisture_index=reading_data["moisture_index"],
                                   mac_address=reading_data["mac_address"])
+                plant_health_alert(plant, plant.get_problems(reading))
                 db.session.add(reading)
                 db.session.commit()
             else:
@@ -146,7 +172,8 @@ def launch_mqtt():
 
 def create_app():
     application = Flask(__name__, template_folder="views")
-    application.testing = False
+    # This must be set false for emails to actually send.
+    application.testing = True
 
     application.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'  # REPLACE THIS.
     application.secret_key = "VERY SECRET KEY"  # Update for production.
