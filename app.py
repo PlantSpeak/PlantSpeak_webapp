@@ -226,6 +226,15 @@ mqtt_thread = threading.Thread(target=launch_mqtt)
 mqtt_thread.setDaemon(True)
 mqtt_thread.start()
 
+PUSH_NOTIFICATION_COOLDOWN = 15
+@application.route("/get_notifications", methods=['GET', 'POST'])
+def get_push_notifications():
+    notifications = Notification.query.filter(Notification.time>time.time()-PUSH_NOTIFICATION_COOLDOWN).order_by(Notification.time.desc())
+    messages = []
+    for i in notifications:
+        messages.append(dict(topic=i.topic, message=i.message))
+    return json.dumps(dict(messages=messages))
+
 # # FOR DEBUGGING PURPOSES ONLY
 # # Remove for production release.
 @application.before_first_request

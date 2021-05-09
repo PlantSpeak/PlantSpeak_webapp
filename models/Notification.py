@@ -16,7 +16,7 @@ types = {0: "Watering Reminder",
 # As it stands, only email and push notifications are being implemented.
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.Integer)
+    # type = db.Column(db.Integer)
     user_id = db.Column(db.Integer)
     plant_id = db.Column(db.Integer)
     topic = db.Column(db.String(MAX_TOPIC_LENGTH))
