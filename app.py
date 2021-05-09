@@ -6,6 +6,7 @@ from flask import Flask, Blueprint, session
 from controllers.MainController import main_pages
 from controllers.UserController import user_pages
 from controllers.PlantController import plant_pages
+from controllers.ApiController import api
 import flask_sqlalchemy
 from database import bcrypt, db
 from mqtt_tool import mqtt
@@ -24,6 +25,7 @@ from models.Device import *
 import paho.mqtt.client as mqtt
 
 from mail_tool import mail
+
 MESSAGE_MAX_LENGTH = 32768
 PHONE_MAX_LENGTH = 16
 MAX_TOPIC_LENGTH = 16
@@ -124,6 +126,7 @@ def handle_mqtt_message(client, userdata, message):
             plant = Plant.query.filter_by(mac_address=reading_data["mac_address"]).one_or_none()
             if plant and Reading.query.filter_by(time=reading_data["time"], mac_address=reading_data["mac_address"]).count()==0:
                 reading = Reading(time=reading_data["time"],
+                                  plant_id=plant.id,
                                   temperature=reading_data["temp"],
                                   humidity=reading_data["humidity"],
                                   light_intensity=reading_data["light_intensity"],
@@ -150,11 +153,11 @@ def get_watering_reminder_jobs(application):
                                       args=(i.plant_id, i.user_id),
                                       func=watering_reminder_job, trigger='interval',
                                       seconds=plant_type.watering_frequency,
-                                      next_run_time = datetime.datetime.fromtimestamp(time.time()), replace_existing=True)
+                                      next_run_time = datetime.fromtimestamp(time.time()), replace_existing=True)
                 elif plant_type.watering_frequency > (time.time() - watering_due) > 0:
                     scheduler.add_job(id="watering_reminder_plant_%d_user_%d" % (i.plant_id, i.user_id), args=(i.plant_id, i.user_id),
                                       func=watering_reminder_job, trigger='interval', seconds=plant_type.watering_frequency,
-                                      next_run_time=datetime.datetime.fromtimestamp(last_watered+plant_type.watering_frequency), replace_existing=True)
+                                      next_run_time=datetime.fromtimestamp(last_watered+plant_type.watering_frequency), replace_existing=True)
                 else:
                     scheduler.add_job(id="watering_reminder_plant_%d_user_%d" % (i.plant_id, i.user_id), args=(i.plant_id, i.user_id),
                                       func=watering_reminder_job, trigger='interval', seconds=plant_type.watering_frequency, replace_existing=True)
@@ -217,6 +220,7 @@ def create_app():
     application.register_blueprint(main_pages)
     application.register_blueprint(user_pages)
     application.register_blueprint(plant_pages)
+    application.register_blueprint(api)
 
     return application
 

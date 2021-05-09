@@ -1,6 +1,10 @@
+import datetime
+import time
+
 from database import bcrypt, db
 from models.Plant import *
 from flask import current_app
+from datetime import datetime
 
 class Reading(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -12,7 +16,7 @@ class Reading(db.Model):
     soil_moisture = db.Column(db.Float)
     mac_address = db.Column(db.String(20))
 
-    def __init__(self, time, temperature, humidity, light_intensity, soil_moisture, moisture_index, mac_address):
+    def __init__(self, time, plant_id, temperature, humidity, light_intensity, soil_moisture, moisture_index, mac_address):
         self.time = time
         self.temperature = temperature
         self.humidity = humidity
@@ -20,6 +24,7 @@ class Reading(db.Model):
         self.soil_moisture = soil_moisture
         self.moisture_index = moisture_index
         self.mac_address = mac_address
+        self.plant_id = plant_id
 
     # TODO
     def getMoistureIndex(self):
@@ -28,3 +33,12 @@ class Reading(db.Model):
     # TODO
     def getMoistureDescription(self):
         return 0
+
+    @property
+    def serialize(self):
+        return dict(plant_id=self.plant_id,
+                    time=(datetime.fromtimestamp(self.time)).strftime("%D %T"),
+                    temperature=self.temperature,
+                    humidity=self.humidity,
+                    soil_moisture=self.soil_moisture,
+                    light_intensity=self.light_intensity)
