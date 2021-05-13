@@ -1,6 +1,6 @@
 import time
 
-from flask import Blueprint, current_app, url_for, request, redirect, render_template, session
+from flask import Blueprint, current_app, url_for, request, redirect, render_template, session, flash
 from models.Plant import *
 from models.PlantType import *
 from models.Favourite import *
@@ -114,6 +114,7 @@ def add_favourite(plant_id):
         favourite = Favourite(session['user_id'], plant_id)
         db.session.add(favourite)
         db.session.commit()
+        flash("Plant added to favourites list!", category="success")
         return redirect(request.referrer)
     else:
         return redirect(url_for('users.login'))
@@ -137,13 +138,20 @@ def register(device_id):
     device = Device.query.filter_by(id=device_id).first()
     form = PlantRegistrationForm(request.form)
     form.plant_type.choices = [(i.id, i.name) for i in PlantType.query.all()]
-    if request.method=="POST" and form.validate():
-        newPlant = Plant(type=form.plant_type.data, level=form.level.data, location=form.location.data, mac_address=device.mac_address)
-        device = Device.query.filter_by(id=device_id).one()
-        device.registered = 1
-        db.session.add(newPlant)
-        db.session.commit()
-        return redirect(url_for('main.home'))
+    if not device:
+        flash("No device exists for this plant. Please use a device listed below.", category="danger")
+        return redirect(url_for('plants.show_devices'))
+    else:
+        if request.method=="POST" and form.validate():
+            newPlant = Plant(type=form.plant_type.data, level=form.level.data, location=form.location.data, mac_address=device.mac_address)
+            if not Plant.query.filter_by(type=newPlant.type, level=newPlant.level, location=newPlant.location).all() and not Plant.query.filter_by(mac_address=newPlant.mac_address).all():
+                device = Device.query.filter_by(id=device_id).one()
+                device.registered = 1
+                db.session.add(newPlant)
+                db.session.commit()
+                return redirect(url_for('main.home'))
+            else:
+                flash("A plant with those details already exists!", category="danger")
     return render_template("register_plant.html", form=form)
 
 import pygal

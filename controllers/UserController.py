@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, url_for, request, redirect, render_template, session
+from flask import Blueprint, current_app, url_for, request, redirect, render_template, session, flash
 from models.User import *
 from models.Notification import *
 from database import db
@@ -31,11 +31,12 @@ def register():
     form = RegistrationForm(request.form)
     if request.method=="POST" and form.validate():
         if not userExists(form.username.data):
-            newUser = User(password=form.password.data, username=form.username.data, email=form.email.data)
+            newUser = User(password=form.password.data, username=form.username.data, email=form.email.data, type=0)
             db.session.add(newUser)
             db.session.commit()
             session['user_id'] = newUser.id
             session['username'] = newUser.username
+            flash("Your user account has been created!", category="success")
             return redirect(url_for('main.home'))
         else:
             form.username.errors.append("That username is already taken.")
@@ -50,22 +51,30 @@ class CreateUserForm(Form):
 @user_pages.route('/create_user', methods=['GET','POST'])
 def create_user():
     if not session.get('user_id'):
-        redirect(url_for('main.home'))
+        flash("You need to be logged in to do that.", category="danger")
+        return redirect(url_for('main.home'))
     user = User.query.filter_by(id=session['user_id']).one()
     if user.type != 1:
-        redirect(url_for('main.home'))
+        flash("You need administrator priveledges to do that.", category="danger")
+        return redirect(url_for('main.home'))
     form = CreateUserForm(request.form)
     random_password = str(uuid.uuid4())[:8]
     if request.method=="POST" and form.validate():
         newUser = User(type=int(form.admin.data), password=random_password, username=form.username.data, email=form.email.data)
-        db.session.add(newUser)
-        db.session.commit()
-        registered_notification = Notification(newUser.id, None, "PlantSpeak Registration Details", """You have successfully signed up for PlantSpeak.
-         Your login details are as follows:
-         USERNAME: %s
-         PASSWORD %s""" % (newUser.username, random_password), newUser.email)
-        registered_notification.send()
-        return redirect(url_for('home'))
+        if User.query.filter_by(username=newUser.username).all():
+            flash("A user with that username already exists!", category="danger")
+        elif User.query.filter_by(email=newUser.email).all():
+            flash("A user with that email already exists!", category="danger")
+        else:
+            db.session.add(newUser)
+            db.session.commit()
+            registered_notification = Notification(newUser.id, None, "PlantSpeak Registration Details", """You have successfully signed up for PlantSpeak.
+             Your login details are as follows:
+             USERNAME: %s
+             PASSWORD %s""" % (newUser.username, random_password), newUser.email)
+            registered_notification.send()
+            flash("User created successfully!", category="success")
+            return redirect(url_for('main.home'))
     return render_template("create_user.html", form=form)
 
 @user_pages.route('/login', methods=['GET','POST'])
@@ -84,9 +93,12 @@ def login():
                     else:
                         session['password_attempts']-=1
                         form.password.errors.append("Incorrect password. %d attempts remaining."%session['password_attempts'])
+                        flash("Invalid entries. Please check your entries and try again.", category="danger")
                         return render_template('login.html', form=form)
+            flash("Invalid entries. Please check your entries and try again.", category="danger")
             return render_template('login.html', form=form, error="Invalid entries. Please check your entries and try again.")
         else:
+            flash("You have exceeded the maximum number of password attempts. Please try again later.", category="danger")
             return render_template('login.html', form=form,
                                    error="You have exceeded the maximum number of password attempts. Please try again later.")
     return render_template('login.html', form=form)
