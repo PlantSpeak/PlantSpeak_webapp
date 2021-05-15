@@ -1,8 +1,63 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+    <meta charset="UTF-8">
+    <link href="{{url_for('static', filename='styles/style.css')}}" rel="stylesheet">
+    <!-- Include Bootstrap + dependencies -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
 
-{%  block content %}
-{% from "_formlayout.html" import generate_field %}
+
+    <!-- {{url_for ('static', filename='images/background1.jpg') }} -->
+   <style>
+      body { 
+          background-image: url("static/images/background1.jpg");
+          background-repeat: no-repeat;
+          background-size: cover;
+          background-attachment: fixed;
+         }
+         /* .navbar {
+          background-image: url("static/images/background2.jpeg");
+          background-repeat: no-repeat;
+          background-size: cover;
+        } */
+   </style>
 <body>
+    <nav class="navbar navbar-expand-lg fixed-top navbar-light flex-md-nowrap p-0 shadow bg-info">
+      <div class="container-fluid">
+        <a class="navbar-brand text-white" href="{{ url_for('main.home') }}">
+            <span style="color:white">
+            <i class="fa fa-leaf" ></i>
+          </span>PlantSpeak</a>
+
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ml-auto">
+              {%  if session['username'] %}
+              <li class="nav-item">
+                <a class="nav-link text-white" href="{{ url_for('users.logout') }}">Logout</a>
+              </li>
+            </ul>
+            {% else %}
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                  <a class="nav-link text-white" href="{{ url_for('users.login') }}">Log In</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link text-white" href="{{ url_for('users.register') }}">Register</a>
+                </li>
+            </ul>
+                {%  endif %}
+        </div>
+      </div>
+    </nav>
+{% from "_formlayout.html" import generate_field %}
+
 
     <div id="login">
         <br/>
@@ -10,18 +65,19 @@
             <div id="login-row" class="row justify-content-center align-items-center">
 
                 <div id="login-column" class="col-md-6">
-                    <div id="login-box" class="col-md-12">
+                    <div id="login-box" class="col-md-12"><br>
                         <h3 class="text-center text-info">Login</h3>
                         <form method="post">
                         {{generate_field(form.username)}}
                         {{generate_field(form.password)}}
-                        <input type="submit"  name="submit" class="btn btn-info btn-md" value="Submit">
+                        <input type="submit"  name="submit" class="btn btn-info btn-md float-right" value="Submit">
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</body>
 
-{%  endblock %}
+
+</body>
+</html>
