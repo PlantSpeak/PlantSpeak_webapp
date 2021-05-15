@@ -1,11 +1,37 @@
 {% extends 'base.html' %}
 {% block content %}
       {% from "_formlayout.html" import generate_field %}
-    <form method="post">
+    <!-- <form method="post">
     {{ generate_field(form.username) }}
     {{ generate_field(form.email) }}
     {{ generate_field(form.admin) }}
     <input type="submit" value="Submit">
         {{error}}
-    </form>
-      {%  endblock %}
+    </form> -->
+  <div id="createUser">
+    <br/>
+    <div class="container">
+        <div id="createUser-row" class="row justify-content-center align-items-center">
+
+            <div id="createUser-column" class="col-sm-5">
+                <div id="createUser-box" class="col-sm-8"><br>
+                    <h3 class="text-center text-info">Create User</h3>
+                    <form method="post">
+                      {{ generate_field(form.username) }}
+                      {{ generate_field(form.email) }}
+                      <!-- {{ generate_field(form.admin) }} -->
+                      <div class="form-group row text-info">
+                        <div class="col-sm-11">administrator privileges</div>
+                          <div class="form-check">
+                            <input class="form-check-input " type="checkbox" id="admin">
+                          </div>
+                      </div>
+                    <input type="submit"  name="submit" class="btn btn-info btn-md float-right" value="Submit">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{%  endblock %}
