@@ -1,25 +1,164 @@
 {% extends 'base.html' %}
-
 {%  block content %}
-    <h2>Add Plant Type</h2>
     {% from "_formlayout.html" import generate_field %}
-    <form method="post">
-    {{ generate_field(form.plant_type) }}
-    {{ generate_field(form.requires_water) }}
-        Water
-    {{ generate_field(form.watering_frequency_interval) }} time(s) per
-    {{ generate_field(form.watering_frequency_unit) }}
-    {{ generate_field(form.min_temp) }}
-    {{ generate_field(form.max_temp) }}
-    {{ generate_field(form.min_humidity) }}
-    {{ generate_field(form.max_humidity) }}
-    {{ generate_field(form.min_soil_moisture) }}
-    {{ generate_field(form.max_soil_moisture) }}
-    {{ generate_field(form.ideal_soil_moisture_level) }}
-    {{ generate_field(form.min_light_intensity) }}
-    {{ generate_field(form.max_light_intensity) }}
-    <input type="submit" value="Submit">
-        {{error}}
-    </form>
-
+    <script>
+            $(function(){
+                var $select = $(".1-100");
+                for (i=1;i<=100;i++){
+                    $select.append($('<option></option>').val(i).html(i))
+                }
+            });
+            $(function(){
+                var $select = $(".1-5");
+                for (i=1;i<=5;i++){
+                    $select.append($('<option></option>').val(i).html(i))
+                }
+            });
+            $(function(){
+                var $select = $(".10-25");
+                for (i=10;i<=25;i++){
+                    $select.append($('<option></option>').val(i).html(i))
+                }
+            });
+    </script>
+<body>
+    <main>
+            <!-- <form method="post">
+                <div class="form-group row col-form-label">
+                    <div id="login-column" class="col-md-3">
+                        {{ generate_field(form.plant_type) }}
+                        {{ generate_field(form.requires_water) }}
+                            Water
+                        {{ generate_field(form.watering_frequency_interval) }} time(s) per
+                        {{ generate_field(form.watering_frequency_unit) }}
+                        {{ generate_field(form.min_temp) }}
+                        {{ generate_field(form.max_temp) }}
+                        {{ generate_field(form.min_humidity) }}
+                        {{ generate_field(form.max_humidity) }}
+                        {{ generate_field(form.min_soil_moisture) }}
+                        {{ generate_field(form.max_soil_moisture) }}
+                        {{ generate_field(form.ideal_soil_moisture_level) }}
+                        {{ generate_field(form.min_light_intensity) }}
+                        {{ generate_field(form.max_light_intensity) }}
+                    </div>
+                </div>
+            <input type="submit" value="Submit">
+                {{error}}
+            </form> -->
+        <div class="box1">
+            <form method="POST" class="text-info">
+                <div class="form-group row">
+                  <label for="plant_type" class="col-sm-5 col-form-label">Plant Type Name</label>
+                    <input type="text" class="col-sm-3 form-control form-control-sm" id="plant_type" placeholder="Create a name for your type">
+                </div>
+            
+                <div class="form-group row">
+                  <div class="col-sm-5">Water Ruquires</div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="requires_water">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="add_plant_type" class="col-sm-5 col-form-label">
+                        Watering Frequency Interval
+                    </label>
+                    <select class=" 1-5 col-sm-1 form-control form-control-sm" id="watering_frequency_interval">
+                    </select>
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">times per</label>
+                    <select class="col-sm-1 form-control form-control-sm" id="watering_frequency_interval">
+                        <option>day</option>
+                        <option>week</option>
+                        <option>month</option>
+                    </select>
+                </div>
+                <div class="form-group row">
+                    <label for="add_plant_type" class="col-sm-5 col-form-label">
+                        Watering Frequency Unit
+                    </label>
+                    <select class="1-5 col-sm-1 form-control form-control-sm" id="watering_frequency_unit">
+                    </select>
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Description here!</label>
+                </div>
+                <div class="form-group row">
+                    <label for="add_plant_type" class="col-sm-5 col-form-label">
+                        Minimum Temperature
+                    </label>
+                    <select class="10-25 col-sm-1 form-control form-control-sm" id="min_temp">
+                    </select>
+                    <span> &nbsp &#8451;</span>
+                </div>
+                <div class="form-group row">
+                    <label for="add_plant_type" class="col-sm-5 col-form-label">
+                        Maximum Temperature
+                    </label>
+                    <select class="10-25 col-sm-1 form-control form-control-sm" id="max_temp">
+                    </select>
+                    <span> &nbsp &#8451;</span>
+                </div>
+                <div class="form-group row">
+                    <label for="add_plant_type" class="col-sm-5 col-form-label">
+                        Minmum Humidity
+                    </label>
+                    <select class="1-100 col-sm-1 form-control form-control-sm" id="min_humidity">
+                    </select>
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">%</label>
+                </div>
+                <div class="form-group row">
+                    <label for="add_plant_type" class="col-sm-5 col-form-label">
+                        Maximum Humidity
+                    </label>
+                    <select class="1-100 col-sm-1 form-control form-control-sm" id="max_humidity">
+                    </select>
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">%</label>
+                </div>
+                <div class="form-group row">
+                    <label for="add_plant_type" class="col-sm-5 col-form-label">
+                        Minimum Soil Moisture
+                    </label>
+                    <select class="1-5 col-sm-1 form-control form-control-sm" id="min_soil_moisture">
+                    </select>
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Description here</label>
+                </div>
+                <div class="form-group row">
+                    <label for="add_plant_type" class="col-sm-5 col-form-label">
+                        Maximum Soil Moisture
+                    </label>
+                    <select class="1-5 col-sm-1 form-control form-control-sm" id="max_soil_moisture">
+                    </select>
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Description here</label>
+                </div>
+                <div class="form-group row">
+                    <label for="add_plant_type" class="col-sm-5 col-form-label">
+                        Ideally Soil Moisture Level
+                    </label>
+                    <select class="1-5 col-sm-1 form-control form-control-sm" id="ideal_soil_moisture_level">
+                    </select>
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Description here</label>
+                </div>
+                <div class="form-group row">
+                    <label for="add_plant_type" class="col-sm-5 col-form-label">
+                        Minimum Light Intensity
+                    </label>
+                    <select class="1-5 col-sm-1 form-control form-control-sm" id="min_light_intensity">
+                    </select>
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Description here</label>
+                </div>
+                <div class="form-group row">
+                    <label for="add_plant_type" class="col-sm-5 col-form-label">
+                        Maximum Light Intensity
+                    </label>
+                    <select class="1-5 col-sm-1 form-control form-control-sm" id="max_light_intensity">
+                    </select>
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Description here</label>
+                </div>
+                <div class="form-group row">
+                  <div class="col-sm-10">
+                    <button type="submit" class="btn btn-info float-right">Submit</button>
+                  </div>
+                </div>
+                {{error}}
+              </form>
+            </div>
+    </main>
+</body>
 {%  endblock %}
