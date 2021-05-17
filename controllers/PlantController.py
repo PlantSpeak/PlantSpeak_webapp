@@ -18,11 +18,12 @@ class BaseTable(Table):
 
 class DeviceTable(BaseTable):
     id = Col('Device ID')
+    favourite = ButtonCol('Add Plant', 'plants.register', url_kwargs=dict(device_id='id'),
+                          button_attrs={'class': 'btn btn-success'})
     mac_address = Col('MAC Address')
     last_seen = Col('Last Seen')
     label = Col('label')
     location = Col('location')
-    favourite = ButtonCol('Add Plant', 'plants.register', url_kwargs=dict(device_id='id'), button_attrs={'class': 'btn btn-success'})
 
 class PlantTable(BaseTable):
     plant_id = Col('Plant ID')
@@ -40,23 +41,26 @@ def create_fa_symbol(tooltip_message, symbol, colour):
 class ProblemsCol(Col):
     def td_format(self, content):
         problem_list = []
-        if content['temperature_high']:
-            problem_list.append(create_fa_symbol("Temperature too high.", "red", "fa-thermometer-full"))
-        if content['temperature_low']:
-            problem_list.append(create_fa_symbol("Temperature too low.", "skyblue", "fa-snowflake"))
-        if content['humidity_low']:
-            problem_list.append(create_fa_symbol("Humidity too low.", "skyblue", "fa-water"))
-        if content['humidity_high']:
-            problem_list.append(create_fa_symbol("Humidity too high..", "skyblue", "fa-water"))
-        if content['moisture_low']:
-            problem_list.append(create_fa_symbol("Soil moisture too low.", "blue", "fa-tint-slash"))
-        if content['moisture_high']:
-            problem_list.append(create_fa_symbol("Soil moisture too high.", "blue", "fa-tint"))
-        if content['light_intensity_low']:
-            problem_list.append(create_fa_symbol("Light Intensity too low.", "orange", "far fa-lightbulb"))
-        if content['light_intensity_high']:
-            problem_list.append(create_fa_symbol("Light Intensity too high.", "orange", "fas fa-lightbulb"))
-        return problem_list
+        if content:
+            if content.values():
+                if content['temperature_high']:
+                    problem_list.append(create_fa_symbol("Temperature too high.", "red", "fa-thermometer-full"))
+                if content['temperature_low']:
+                    problem_list.append(create_fa_symbol("Temperature too low.", "skyblue", "fa-snowflake"))
+                if content['humidity_low']:
+                    problem_list.append(create_fa_symbol("Humidity too low.", "skyblue", "fa-water"))
+                if content['humidity_high']:
+                    problem_list.append(create_fa_symbol("Humidity too high..", "skyblue", "fa-water"))
+                if content['moisture_low']:
+                    problem_list.append(create_fa_symbol("Soil moisture too low.", "blue", "fa-tint-slash"))
+                if content['moisture_high']:
+                    problem_list.append(create_fa_symbol("Soil moisture too high.", "blue", "fa-tint"))
+                if content['light_intensity_low']:
+                    problem_list.append(create_fa_symbol("Light Intensity too low.", "orange", "far fa-lightbulb"))
+                if content['light_intensity_high']:
+                    problem_list.append(create_fa_symbol("Light Intensity too high.", "orange", "fas fa-lightbulb"))
+                return problem_list
+        return ""
 
 class SavedListTable(BaseTable):
     plant_id = Col('Plant ID')
@@ -166,7 +170,8 @@ def prepare_readings_chart(attribute, attribute_name, readings, x_label_count, y
     temp_chart = pygal.DateTimeLine(x_label_rotation=20, range=(y_min, y_max),
                                show_minor_x_labels=False, show_major_x_labels=True,
                                x_labels_major_count=x_label_count, show_legend=False, style=style,
-                                    x_title=x_label, y_title=y_label, logarithmic=logarithmic)
+                                    x_title=x_label, y_title=y_label, logarithmic=logarithmic,
+                                    x_value_formatter=lambda dt: dt.strftime('%H:%M %p'))
     temp_chart.add(attribute_name, [(datetime.fromtimestamp(i.time), getattr(i, attribute)) for i in readings])
     chart = temp_chart.render_data_uri()
     return chart
@@ -346,7 +351,7 @@ def dashboard():
             favourites_records.append(dict(plant_id=i.plant_id, type=plant_type, location=plant.location,
                                       floor=plant.level, condition=condition, alerts=problems, last_seen=last_seen))
         print(favourites_records)
-        table = SavedListTable(favourites_records)
+        table = SavedListTable(favourites_records, classes=["table table-striped"])
         return render_template('dashboard.html', table=table, plants_with_problems=plants_with_problems)
     else:
         return redirect(url_for('users.login'))
@@ -370,13 +375,13 @@ class PlantTypeRegistrationForm(Form):
     min_soil_moisture = IntegerField(validators=[validators.optional(),
                                                  validators.NumberRange(min=0,max=100)])
     max_soil_moisture = IntegerField(validators=[validators.optional(),
-                                                 validators.NumberRange(min=-273.15,max=100)])
+                                                 validators.NumberRange(min=0,max=100)])
     ideal_soil_moisture_level = SelectField(choices=[(0, 'Dry'), (1, 'Moist'), (2, 'Wet')],
                                             validators=[validators.optional()])
     min_light_intensity = IntegerField(validators=[validators.optional(),
-                                                   validators.NumberRange(min=0,max=100)])
+                                                   validators.NumberRange(min=0)])
     max_light_intensity = IntegerField(validators=[validators.optional(),
-                                                   validators.NumberRange(min=0,max=100)])
+                                                   validators.NumberRange(min=0)])
 
 @plant_pages.route('/add_plant_type', methods=['GET','POST'])
 def add_plant_type():
@@ -403,5 +408,5 @@ def show_devices():
             last_seen = str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(i.last_seen)))
             devices_table_items.append(dict(id=i.id, mac_address=i.mac_address, last_seen=last_seen,
                                             label=i.label, location=i.location))
-    table = DeviceTable(devices_table_items)
+    table = DeviceTable(devices_table_items, classes=["table table-sm table-striped"])
     return render_template("device.html", table=table)

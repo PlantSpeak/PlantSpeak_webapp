@@ -86,9 +86,10 @@ def plant_health_alert(plant, plant_problems):
                 if time.time()-last_notification(i)<SAME_PLANT_NOTIFICATION_COOLDOWN:
                     return
             message = "Problems with %s located on level %d, %s:\n"%(plant_type.name,plant.level,plant.location)
-            for j in plant_problems.keys():
-                if plant_problems[j]:
-                    message+="- %s\n"%j
+            if plant_problems:
+                for j in plant_problems.keys():
+                    if plant_problems[j]:
+                        message+="- %s\n"%j
             user = User.query.filter_by(id=i.user_id).first()
             notification = Notification(i.user_id, plant.id, "A '%s' has problems"%plant_type.name, message, user.email)
             notification.send()

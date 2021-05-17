@@ -14,12 +14,16 @@
 
     <body>
     {% from "_formlayout.html" import generate_field %}
+
+    <h2>Register</h2>
+    <hr>
  <form method="post">
 {{ generate_field(form.email) }}
 {{ generate_field(form.username) }}
 {{ generate_field(form.password) }}
 {{ generate_field(form.confirm_password) }}
-<input type="submit" value="Submit">
+    <br>
+<input type="submit" value="Submit" class="btn btn-info" style="float: right;">
 
 </form>
         <!--<div id="register">

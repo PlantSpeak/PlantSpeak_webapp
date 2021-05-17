@@ -71,7 +71,6 @@ class Plant(db.Model):
                         light_intensity_low=self.light_intensity_too_low(reading, plant_type),
                         light_intensity_high=self.light_intensity_too_high(reading, plant_type))
         for i in problems.values():
-            if i:
-                print(problems)
-                return problems
-        return None
+            if not i:
+                return None
+        return problems

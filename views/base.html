@@ -13,7 +13,7 @@
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
 
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
    <!--<style>
       body 
@@ -37,7 +37,7 @@
 {% endwith %}
 
     <nav class="navbar navbar-expand-lg navbar-light bg-info">
-      <div class="container-fluid">
+      <div class="container"-fluid"">
         <a class="navbar-brand text-white" href="{{ url_for('main.home') }}">
             <span style="color:white">
             <i class="fa fa-leaf" ></i>
@@ -85,13 +85,14 @@
                 <li class="nav-item">
                   <a class="nav-link text-white" href="{{ url_for('users.register') }}">Register</a>
                 </li>
+
             </ul>
                 {%  endif %}
         </div>
       </div>
     </nav>
    
-    <div class= "container">
+    <div class= "container" style="margin: 0 auto;">
         {% block content %} 
         {% endblock %}
     </div>

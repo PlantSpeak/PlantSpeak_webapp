@@ -2,8 +2,33 @@
 
 {% macro generate_field(field) %}
     {{ field.label(for_="form-control", class_="text-info")}}
-    {{ field(class_="form-control")|safe }}<br>
-    {%  for i in field.errors  %}
-        {{ i }}<br>
-    {%  endfor %}
+    {{ field(class_="form-control")|safe }}
+    <div class="invalid-feedback">
+        {% for i in field.errors %}
+            {{ i }}
+        {% endfor %}
+    </div>
+{% endmacro %}
+
+{% macro joined_field(field1, text_between, field2, text_end) %}
+<div class="input-group">
+    {{ field1(class_="form-control")|safe }}
+    <div class="input-group-append">
+      <div class="input-group-text"> {{text_between}} </div>
+    </div>
+    {{ field2(class_="form-control input_group_append")|safe }}
+        {% if text_end %}
+    <div class="input-group-append">
+      <div class="input-group-text"> {{text_end}} </div>
+    </div>
+        {% endif %}
+    <div class="invalid-feedback" style="display: block;">
+        {%  for i in field1.errors  %}
+            {{ i }}
+        {%  endfor %}
+        {%  for i in field2.errors  %}
+            {{ i }}
+        {%  endfor %}
+    </div>
+</div>
 {% endmacro %}
