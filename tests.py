@@ -3,6 +3,7 @@ from models.User import User
 from models.Plant import Plant
 from models.PlantType import PlantType
 from controllers.UserController import LoginForm, RegistrationForm
+from controllers.PlantController import PlantRegistrationForm
 from database import db
 
 from models.Device import *
@@ -95,7 +96,31 @@ def test_multiple_incorrect_passwords(app, setup):
 
 @pytest.fixture()
 def plant_setup(app):
-    testPlantType = PlantType(plantName, requiredWater, waterFrequency, minTemp, maxTemp, minHumidity, maxHumidity, minMoisture, maxMoisture, idealMoistureLevel, minLightIntensity, maxLightIntensity, lastWatered)
+    testPlantType = PlantType(plantName, requiredWater, waterFrequency, minTemp, maxTemp, minHumidity, maxHumidity, minMoisture, maxMoisture, idealMoistureLevel, minLightIntensity, maxLightIntensity)
+   
+
+    device = Device(testMACAddress, testTime)
+    
+    
+    client = app.test_client()
+    
+    db.session.add(device)
+    db.session.add(testPlantType)
+    db.session.commit()
+    
+
+    yield ""
+    db.session.delete(testPlantType)
+    db.session.delete(device)
+
+    # num_rows_deleted = db.session.query(Plant).delete()
+
+    db.session.commit()
+
+
+@pytest.fixture()
+def plant_full_setup(app):
+    testPlantType = PlantType(plantName, requiredWater, waterFrequency, minTemp, maxTemp, minHumidity, maxHumidity, minMoisture, maxMoisture, idealMoistureLevel, minLightIntensity, maxLightIntensity)
    
 
     device = Device(testMACAddress, testTime)
@@ -123,17 +148,29 @@ def plant_setup(app):
     db.session.commit()
 
 
+def test_plant_form_valid(app):
+    form = PlantRegistrationForm(plant_type=testType, level=testLevel, location=testLocation)
+    assert not form.validate()
+
+
 # Test.No 14
-def test_plant_added(app): 
+def test_plant_added(app, plant_setup): 
     client = app.test_client()
     plants = Plant.query.all()
-    url = "/register/plant/" + testMACAddress
 
-    receipt = client.post(url, data={'type':testType, 'level':testLevel, 'location':testLocation})
+
+    url = "/register/plant/" + testMACAddress
+    # print (url)
+
+    receipt = client.post(url, data={'plant_type':testType, 'level':testLevel, 'location':testLocation})
     print (str(receipt.get_data()))
+    # client.get('/plants')
+    # print (str(receipt.get_data()))
     plants_after = Plant.query.all()
     print (plants_after)
 
+    # plant_types = PlantType.query.all()
+    # print (plant_types)
 
 
 
@@ -143,49 +180,77 @@ def test_plant_added(app):
 
     # db.session.delete(User.query.filter_by(username=testUsername2).one())
     # db.session.commit()
-    # 'Check for no "Error" message' 
+    # Assert for no error message
     # assert not "Error" in str(receipt.get_data())
 
 
+    
+
+
 # Test.No 15
-def test_plant_not_created(app, plant_setup):  
+def test_plant_not_created(app, plant_full_setup):  
     client = app.test_client()
 
-    # device = Device(testMACAddress, time.time())
-    # db.session.add(device)
-    # db.session.commit()
 
-    # client.post("/register/plant", data={'type':testType, 'level':testLevel, 'location':testLocation})
-    # db.session.delete(device)
-    # db.session.commit()
+    client.post("/register/plant", data={'plant_type':testType, 'level':testLevel, 'location':testLocation})
+
     
     # Check there aren't two entries with the same name
     assert Plant.query.filter_by(level=testLevel).one()
 
-
-    # db.session.delete(device)
-    # db.session.commit()
-
-    # Check for an error message 
+    # Assert for error message 
     # assert "Error" in str(receipt.get_data())
 
+
+
+
+
 # Test.No 16
-def test_plant_not_created_without_plant_type(app, plant_setup): 
+def test_plant_not_created_with_missing_element(app, plant_setup): 
     client = app.test_client()
     plants = Plant.query.all()
     client.post("/register/plant", data={'level':testLevel, 'location':testLocation})
+    
     plants_after = Plant.query.all()
     assert len(plants) == len(plants_after)
     # plant = Plant.query.filter_by(level=testLevel).one()
     # assert plant is None
 
-# Error pertaining to missing plant_type  
+    # Assert error,
     # assert "Error" in str(receipt.get_data())
 
 # Test.No 30
-# def test_add_plant_type(user): 
-#     client = app.test_client()
+def test_add_plant_type(app): 
+    client = app.test_client()
 
+    plants_types = PlantType.query.all()
+    client.post("/add_plant_type", data={'name':plantName, 'requires_water':requiredWater , 'watering_frequency':waterFrequency , 'min_temp':minTemp ,
+                 'max_temp':maxTemp , 'min_humidity':minHumidity , 'max_humidity':maxHumidity , 'min_moisture':minMoisture , 'max_moisture':maxMoisture ,
+                 'ideal_moisture_level':idealMoistureLevel , 'min_light_intensity':minLightIntensity , 'max_light_intensity':max_light_intensity })
+
+    plants_types_after = PlantType.query.all()
+
+
+    assert not len(plants_types) == len(plants_types_after)
+
+
+
+# Test.No 25
+def test_delete_plant_type(app, plant_full_setup):
+    client = app.test_client()
+
+    plants = Plant.query.all()
+
+    
+    client.post("/plant_remove/1", data={'plant_id':1})
+    plants_after = Plant.query.all()
+    
+    assert not len(plants) == len(plants_after)
+
+
+
+
+    
 
 # import flask_unittest
 #
