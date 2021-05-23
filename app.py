@@ -208,15 +208,15 @@ def create_app():
 
 
 
-    application.config['SCHEDULER_API_ENABLED'] = True
+    # application.config['SCHEDULER_API_ENABLED'] = True
 
     # application.config['SCHEDULER_JOB_DEFAULTS'] = {"coalesce": False, "standalone": True}
     # application.config['SCHEDULER_EXECUTORS'] = {"default": {"type": "threadpool", "max_workers": 0}}
 
-    watering_reminder_scheduler = get_watering_reminder_jobs(application)
+    # watering_reminder_scheduler = get_watering_reminder_jobs(application)
 
-    watering_reminder_scheduler.init_app(application)
-    watering_reminder_scheduler.start()
+    # watering_reminder_scheduler.init_app(application)
+    # watering_reminder_scheduler.start()
 
     application.register_blueprint(main_pages)
     application.register_blueprint(user_pages)
