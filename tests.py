@@ -3,7 +3,7 @@ from models.User import User
 from models.Plant import Plant
 from models.PlantType import PlantType
 from controllers.UserController import LoginForm, RegistrationForm
-from controllers.PlantController import PlantRegistrationForm
+from controllers.PlantController import PlantRegistrationForm, PlantTypeRegistrationForm
 from database import db
 
 from models.Device import *
@@ -152,6 +152,12 @@ def test_plant_form_valid(app):
     form = PlantRegistrationForm(plant_type=testType, level=testLevel, location=testLocation)
     assert not form.validate()
 
+def test_plant_type_register_form_valid(app):
+    form = PlantTypeRegistrationForm(name = plantName, requires_water = requiredWater , watering_frequency = waterFrequency , min_temp = minTemp ,
+                  max_temp = maxTemp , min_humidity = minHumidity , max_humidity = maxHumidity , min_moisture = minMoisture , max_moisture = maxMoisture ,
+                  ideal_moisture_level = idealMoistureLevel , min_light_intensity = minLightIntensity , max_light_intensity = maxLightIntensity )
+    assert form.validate()
+
 
 # Test.No 14
 def test_plant_added(app, plant_setup): 
@@ -226,12 +232,30 @@ def test_add_plant_type(app):
     plants_types = PlantType.query.all()
     client.post("/add_plant_type", data={'name':plantName, 'requires_water':requiredWater , 'watering_frequency':waterFrequency , 'min_temp':minTemp ,
                  'max_temp':maxTemp , 'min_humidity':minHumidity , 'max_humidity':maxHumidity , 'min_moisture':minMoisture , 'max_moisture':maxMoisture ,
-                 'ideal_moisture_level':idealMoistureLevel , 'min_light_intensity':minLightIntensity , 'max_light_intensity':max_light_intensity })
+                 'ideal_moisture_level':idealMoistureLevel , 'min_light_intensity':minLightIntensity , 'max_light_intensity':maxLightIntensity })
 
     plants_types_after = PlantType.query.all()
 
 
     assert not len(plants_types) == len(plants_types_after)
+
+
+# Test.No 31
+def test_cannot_add_duplicate_plant_type(app, plant_setup): 
+    client = app.test_client()
+
+    plants_types = PlantType.query.all()
+    receipt = client.post("/add_plant_type", data={'name':plantName, 'requires_water':requiredWater , 'watering_frequency':waterFrequency , 'min_temp':minTemp ,
+                    'max_temp':maxTemp , 'min_humidity':minHumidity , 'max_humidity':maxHumidity , 'min_moisture':minMoisture , 'max_moisture':maxMoisture ,
+                    'ideal_moisture_level':idealMoistureLevel , 'min_light_intensity':minLightIntensity , 'max_light_intensity':maxLightIntensity })
+    print (str(receipt.get_data()))
+    plants_types_after = PlantType.query.all()
+
+
+    assert len(plants_types) == len(plants_types_after)
+
+    # Assert Error occurs in reciept
+
 
 
 
