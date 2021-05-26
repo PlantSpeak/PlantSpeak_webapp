@@ -1,11 +1,44 @@
 {% extends 'base.html' %}
 {% block content %}
       {% from "_formlayout.html" import generate_field %}
-    <form method="post">
+  <style>
+    body { 
+        background-image: url("static/images/background2.jpeg");
+        background-repeat: repeat;
+        background-size: cover;
+        background-position: fixed;
+        height: 100vh;
+        }
+  </style>
+  <div class="row justify-content-center align-items-center">
+    <div class="card bg-dark text-light col-lg-4 col-md-6 col-sm-8"><br>
+      <h3 class="text-center">Create User</h3>
+      <div class="card-body">
+        <form method="post">
+          <div class="form-group">
+            <label for="form-control">User name</label>
+            <input type="text" name="username" id="username" class="col-md-12">
+          </div>
+          <div class="form-group">
+            <label for="form-control" >Email</label>
+            <input type="email" name="email" id="email" class="col-md-12">
+          </div>
+          <div class="form-group row m-auto">
+            <div>administrator privileges</div>
+              <div class="form-check">
+                <input class="form-check-input ml-auto" type="checkbox" id="admin">
+              </div>
+            </div>
+            <input type="submit"  name="submit" class="btn btn-info btn-md float-right" value="Submit">
+        </form>
+      </div> 
+    </div>
+  </div>
+    <!-- <form method="post">
     {{ generate_field(form.username) }}
     {{ generate_field(form.email) }}
     {{ generate_field(form.admin) }}
     <input type="submit" value="Submit">
         {{error}}
-    </form>
+    </form> -->
       {%  endblock %}

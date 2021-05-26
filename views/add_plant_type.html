@@ -1,102 +1,97 @@
 {% extends 'base.html' %}
 
 {%  block content %}
-        <style>
-            .field{
-                margin-left: 10px;
-                margin-right: 10px;
-                margin-top: 5px;
-            }
-        </style>
-
-    <h2>Add Plant Type</h2>
-
-<hr>
-    {% from "_formlayout.html" import generate_field %}
-    {% from "_formlayout.html" import joined_field %}
-    <form method="post">
-
-    <div class="form-row">
-    <div class="input-group">
-            <div class="col-xs-9 field">
-    {{ generate_field(form.plant_type) }}
-            </div>
-
-    </div>
-    </div>
-    <div class="form-row">
-        <div class="input-group">
-            <div class="col-xs-12 field">
-        <label for="form-control" class="text-info">Requires Water</label>
-                {{form.requires_water}}
-            </div>
-        </div>
-    </div>
-    <div class="form-row">
-        <div class="input-group">
-            <div class="col-xs-12 field">
-                <i class="fa fa-hourglass-end text-info"></i>
-                <label for="form-control" class="text-info">Watering Frequency</label>
-<small class="form-text text-muted">You'll receive notifications to water plants of this type this frequently.</small>
-                {{ joined_field(form.watering_frequency_interval, "times per", form.watering_frequency_unit) }}
-            </div>
-        </div>
-    </div>
-<hr>
-        <h4>Acceptable Environmental Conditions</h4>
-<small class="form-text text-muted">These properties will determine when you receive notifications (when the plants exceed these thresholds you will receive notifications).</small>
-    <div class="form-row">
-        <div class="input-group">
-            <div class="col-xs-12 field">
-                <i class="fa fa-thermometer-half text-info"></i>
-                <label for="form-control" class="text-info">Temperature Range</label>
-                {{ joined_field(form.min_temp, " to", form.max_temp, "°C") }}
-            </div>
-        </div>
-    </div>
-
-    <div class="form-row">
-        <div class="input-group">
-            <div class="col-xs-12 field">
-                <i class="fa fa-tint text-info"></i>
-                <label for="form-control" class="text-info">Humidity Range</label>
-                {{ joined_field(form.min_humidity, " to", form.max_humidity, "%") }}
-            </div>
-        </div>
-    </div>
-
-        <div class="form-row">
-            <div class="input-group">
-                <div class="col-xs-12 field">
-                <i class="fa fa-water text-info"></i>
-                    <label for="form-control" class="text-info">Volumetric Soil Moisture Range</label>
-                    {{ joined_field(form.min_soil_moisture, " to", form.max_soil_moisture, "%") }}
+    <style>
+        .field{
+            margin-left: 10px;
+            margin-right: 10px;
+            margin-top: 5px;
+        }
+        body { 
+                background-image: url("static/images/background2.jpeg");
+                background-repeat: repeat;
+                background-size: cover;
+                background-position: fixed;
+                height: 100vh;
+                }
+    </style>
+    <div class="card card-body bg-dark text-light col-lg-12" >
+        <h3>Add Plant Type</h3>
+            {% from "_formlayout.html" import generate_field %}
+            {% from "_formlayout.html" import joined_field %}
+        <form method="post">
+            <div class="form-row">
+                <div class="input-group">
+                    <div class="col-xs-9 field text-warning">
+                        {{ generate_field(form.plant_type) }}
+                    </div>
                 </div>
             </div>
-        </div>
-
-
-    <div class="form-row">
-        <div class="input-group">
-            <div class="col-xs-12 field">
-                {{ generate_field(form.ideal_soil_moisture_level) }}
+            <div class="form-row">
+                <div class="input-group">
+                    <div class="col-xs-12 field">
+                        <label for="form-control">Requires Water</label>
+                        {{form.requires_water}}
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-
-    <div class="form-row">
-        <div class="input-group">
-            <div class="col-xs-12 field">
-                <i class="far fa-lightbulb text-info"></i>
-                <label for="form-control" class="text-info">Light Intensity Range (Lux)</label>
-                {{ joined_field(form.min_light_intensity, " to", form.max_light_intensity, "lux") }}
+            <div class="form-row">
+                <div class="input-group">
+                    <div class="col-xs-12 field">
+                        <i class="fa fa-hourglass-end"></i>
+                        <label for="form-control">Watering Frequency</label>
+                        <small class="form-text ">You'll receive notifications to water plants of this type this frequently.</small>
+                        {{ joined_field(form.watering_frequency_interval, "times per", form.watering_frequency_unit) }}
+                    </div>
+                </div>
+            </div>   
+            <label class="text-warning">Acceptable Environmental Conditions</label>
+            <small class="form-text ">These properties will determine when you receive notifications (when the plants exceed these thresholds you will receive notifications).</small>
+            <div class="form-row">
+                <div class="input-group">
+                    <div class="col-xs-12 field">
+                        <i class="fa fa-thermometer-half"></i>
+                        <label for="form-control">Temperature Range</label>
+                        {{ joined_field(form.min_temp, " to", form.max_temp, "°C") }}
+                    </div>
+                </div>
             </div>
-        </div>
+            <div class="form-row">
+                <div class="input-group">
+                    <div class="col-xs-12 field">
+                        <i class="fa fa-tint"></i>
+                        <label for="form-control">Humidity Range</label>
+                        {{ joined_field(form.min_humidity, " to", form.max_humidity, "%") }}
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="input-group">
+                    <div class="col-xs-12 field">
+                    <i class="fa fa-water"></i>
+                        <label for="form-control">Volumetric Soil Moisture Range</label>
+                        {{ joined_field(form.min_soil_moisture, " to", form.max_soil_moisture, "%") }}
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="input-group">
+                    <div class="col-xs-12 field">
+                        {{ generate_field(form.ideal_soil_moisture_level) }}
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="input-group">
+                    <div class="col-xs-12 field">
+                        <i class="far fa-lightbulb"></i>
+                        <label for="form-control">Light Intensity Range (Lux)</label>
+                        {{ joined_field(form.min_light_intensity, " to", form.max_light_intensity, "lux") }}
+                    </div>
+                </div>
+            </div>
+            <input type="submit" value="Submit" class="btn btn-info float-right">
+            {{error}}
+        </form>
     </div>
-
-<hr>
-    <input type="submit" value="Submit" class="btn btn-info" style="float: right">
-        {{error}}
-    </form>
-
 {%  endblock %}

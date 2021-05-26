@@ -1,17 +1,27 @@
 {%  extends 'base.html' %}
-
 {%  block content %}
     {% from "_formlayout.html" import generate_field %}
-    <h2>Add Plant</h2>
-    <form method="post">
-        {{ generate_field(form.plant_type) }}
-        Can't find a plant species? <a href="{{ url_for('plants.add_plant_type') }}">Add it here.</a>
-    <br>
-        {{ generate_field(form.level) }}
-    {{ generate_field(form.location) }}
-            <br>
-    <input type="submit" value="Submit" class="btn btn-info" style = "float: right;">
-        {{error}}
-    </form>
+    <style>
+        body { 
+            background-image: url("static/images/background2.jpeg");
+            background-repeat: repeat;
+            background-size: cover;
+            background-position: fixed;
+            height: 100vh;
+            }
+    </style>
+    <div class="card card-body bg-dark text-light col-lg-12">
+        <h2>Add Plant</h2>
+        <form method="post">
+            {{ generate_field(form.plant_type) }}
+            Can't find a plant species? <a href="{{ url_for('plants.add_plant_type') }}">Add it here.</a>
+        <br>
+            {{ generate_field(form.level) }}
+        {{ generate_field(form.location) }}
+                <br>
+        <input type="submit" value="Submit" class="btn btn-info" style = "float: right;">
+            {{error}}
+        </form>
+    </div>
 
 {%  endblock %}

@@ -1,32 +1,71 @@
-body{
-    background-repeat:no-repeat;
-    background-attachment: fixed;
-    background-size:cover;
-}
-#login .container #login-row #login-column #login-box {
-    margin-top: 60px;
-    max-width: 600px;
-    height: 320px;
-    border: 1px solid #9C9C9C;
-    background-color: #EAEAEA;
-  }
-  #login .container #login-row #login-column #login-box #login-form {
-    padding: 20px;
-  }
-  #login .container #login-row #login-column #login-box #login-form {
-    margin-top: -5px;
-  }
 
-  #register .container #register-row #register-column #register-box {
-    margin-top: 60px;
-    max-width: 600px;
-    height: 520px;
-    border: 1px solid #9C9C9C;
-    background-color: #eaeaea;
+.sidebar,
+.overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+}
+
+.sidebar {
+  left: -100%;
+  max-width: 300px;
+  transition: all ease 0.25s;
+  overflow-y: auto;
+  z-index: 1032;
+}
+.overlay {
+  left: 0;
+  right: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  visibility: hidden;
+  z-index: 1031;
+}
+
+.main-navigation.active .sidebar {
+  left: 0;
+  opacity: 0.9;
+}
+
+.main-navigation.active .overlay {
+  visibility: visible;
+  
+}
+
+@media (min-width: 992px) {
+  .sidebar {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    flex-direction: row;
+    max-width: 100%;
+    transform: none;
+    transition: none;
+    overflow-y: visible;
+    z-index: auto;
   }
-  #register .container #register-row #register-column #register-box #register-form {
-    padding: 20px;
+}
+
+.main-heading {
+  position: relative;
+  z-index: 100;
+}
+.nav-item{
+    margin-left: 1rem;
+    
+  }  
+main {
+    margin-left: 0rem;
+    margin-top: 5rem;
+    padding: 1rem;
   }
-  #register .container #register-row #register-column #lregister-box #register-form {
-    margin-top: -85px;
-  }
+.card{
+  opacity: 0.75;
+}
+
+
+
+  
+

@@ -2,9 +2,35 @@
 
 {%  block content %}
 {% from "_formlayout.html" import generate_field %}
-<body>
+    <style>
+        body { 
+        background-image: url("static/images/background1.jpg");
+        background-repeat: repeat;
+        background-size: cover;
+        background-position: fixed;
+        height: 100vh;
+        }
+    </style>
+    <div class="row justify-content-center align-items-center">
+        <div class="card bg-dark text-light col-lg-4 col-md-6 col-sm-8" style="opacity: 0.9"><br>
+            <h3 class="text-center">Login</h3>
+            <div class="card-body">
+                <form method="post">
+                    <div class="form-group">
+                        <label for="form-control">User name</label>
+                        <input type="text" name="username" id="username" class="col-md-12">
+                    </div>
+                    <div class="form-group">
+                        <label for="form-control" >Password</label>
+                        <input type="password" name="password" id="password" class="col-md-12">
+                    </div>
+                    <input type="submit"  name="submit" class="btn btn-info btn-md float-right" value="Submit">
+                </form>
+            </div> 
+        </div>
+    </div>
 
-    <div id="login">
+    <!-- <div id="login">
         <br/>
         <div class="container">
             <div id="login-row" class="row justify-content-center align-items-center">
@@ -22,7 +48,6 @@
                 </div>
             </div>
         </div>
-    </div>
-</body>
+    </div>-->
 
 {%  endblock %}

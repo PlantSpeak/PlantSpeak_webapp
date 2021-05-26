@@ -15,7 +15,7 @@
     <body>
     {% from "_formlayout.html" import generate_field %}
 
-    <h2>Register</h2>
+    <!-- <h2>Register</h2>
     <hr>
  <form method="post">
 {{ generate_field(form.email) }}
@@ -25,52 +25,40 @@
     <br>
 <input type="submit" value="Submit" class="btn btn-info" style="float: right;">
 
-</form>
-        <!--<div id="register">
-            <br/>
-            <div class="container">
-                <div id="register-row" class="row justify-content-center align-items-center">
-                    <div id="register-column" class="col-md-6">
-                        <div id="register-box" class="col-md-12">
-                            <form id="register-form" class="form" action="" method="post">
-                                <h3 class="text-center text-info">Register</h3>
-                                <div class="form-group">
-                                    <label for="form-control" class="text-info">Email:</label><br>
-                                    <input type="text" name="email" id="email" class="form-control">
-                                </div>
-                                <div class="form-group">
-                                    <label for="form-control" class="text-info">User name:</label><br>
-                                    <input type="text" name="username" id="username" class="form-control">
-                                </div>
-                                <div class="form-group">
-                                    <label for="form-control" class="text-info">Password:</label><br>
-                                    <input type="text" name="password" id="password" class="form-control">
-                                </div>                          
-                                <div class="form-group">
-                                    <label for="form-control" class="text-info"> Repeat Password:</label><br>
-                                    <input type="text" name="confirm_password" id="confirm_password" class="form-control">
-                                </div>
-                                <div class="form-group"><br>
-                                    <input type="submit" name="submit" class="btn btn-info btn-md" value="submit">
-                                </div>
-                               
-                                {{error}}
-                            </form>
-                        </div>
+</form> -->
+    <style>
+        body { 
+        background-image: url("static/images/background1.jpg");
+        background-repeat: repeat;
+        background-size: cover;
+        background-position: fixed;
+        height: 100vh;
+        }
+    </style>
+    <div class="row justify-content-center align-items-center">
+        <div class="card bg-dark text-light col-lg-4 col-md-6 col-sm-8" style="opacity: 0.9"><br>
+        <h3 class="text-center">Register</h3>
+            <div class="card-body">
+                <form method="post">
+                    <div class="form-group">
+                        <label for="form-control">Email</label><br>
+                        <input type="text" name="email" id="email" class="col-md-12">
                     </div>
-                </div>
+                    <div class="form-group">
+                        <label for="form-control">User name</label><br>
+                        <input type="text" name="username" id="username" class="col-md-12">
+                    </div>
+                    <div class="form-group">
+                        <label for="form-control">Password</label><br>
+                        <input type="password" name="password" id="password" class="col-md-12">
+                    </div>
+                    <div class="form-group">
+                        <label for="form-control">Confirm The Password</label><br>
+                        <input type="password" name="confirm_password" id="confirm_password" class="col-md-12">
+                    </div>
+                    <input type="submit"  name="submit" class="btn btn-info btn-md float-right" value="Submit">
+                </form>
             </div>
-        </div>-->
-    </body>
-
-
-
-
-
-
-
-
-
-
-    
+        </div>
+    </div>
 {%  endblock %}
