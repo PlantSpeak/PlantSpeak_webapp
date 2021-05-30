@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{%  block content %}
+
+    <meta charset="UTF-8">
+    <title>Plantspeak - Dashboard</title>
+
+        <!--
+<i class="fa fa-star"></i>
+<i class="fas fa-lightbulb"></i>
+<i class="far fa-lightbulb"></i>
+<i class="fa fa-users"></i>
+<i class="fa fa-user"></i>
+<i class="fa fa-tree"></i>
+<i class="fa fa-hourglass-end"></i>
+<i class="fa fa-plus"></i>
+<i class="fa fa-trash"></i>
+
+<span class="d-inline-block" data-bs-toggle="tooltip"  title="Temperature too low" data-bs-animation=true style="color:skyblue">
+     <i class="fa fa-snowflake"></i>
+</span>
+
+<span class="d-inline-block" data-bs-toggle="tooltip"  title="Temperature too high" data-bs-animation=true style="color:red">
+      <i class="fa fa-thermometer-full"></i>
+</span>
+-->
+
+    <h2>Dashboard</h2>
+
+
+    {% if plants_with_problems == 0 %}
+<i class="fa fa-check"></i>
+        <b>None</b> of your plants need attention.
+    {% elif plants_with_problems>0 %}
+<span class="d-inline-block" style="color: orange">
+<i class="fa fa-exclamation-triangle"></i>
+</span>
+        <b>{{ plants_with_problems }}</b> of your plants <b>need attention</b>.
+    {% endif %}
+
+    <h3>My Saved Plants</h3>
+    {% if plants_with_problems>0 %}
+        <h4>Plants with problems</h4>
+        {{ problems_table }}
+        <hr>
+        <h4>Healthy Plants</h4>
+    {% endif %}
+    {{ table }}
+
+{%  endblock %}

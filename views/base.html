@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+    <meta charset="UTF-8">
+    <link href="{{url_for('static', filename='styles/style.css')}}" rel="stylesheet">
+    <!-- Include Bootstrap + dependencies -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    
+    
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+
+    {% if session['user_id'] %}
+
+    <script>
+        var NOTIFICATION_COOLDOWN = 15000;
+
+        window.onload = Notification.requestPermission(function (status) {
+            console.log('Notifications allowed?: ', status === "granted");
+        });
+
+        function displayNotification(topic, message) {
+            if (Notification.permission == 'granted') {
+                new Notification(topic, {body: message});
+            }
+        }
+
+        function displayMessage(item) {
+            displayNotification(item['topic'], item['message']);
+        }
+
+        var timer = setInterval(getNotifications, NOTIFICATION_COOLDOWN);
+
+        function getNotifications() {
+            var notifications_endpoint = "get_notifications"
+            request = new XMLHttpRequest();
+            request.onreadystatechange = function () {
+
+                if (request.readyState == 4 && request.status == 200) {
+                    var message_data = JSON.parse(request.responseText);
+                    console.log(message_data);
+                    if (message_data) {
+
+                    if (message_data["messages"] !== undefined) {
+                        for (i = 0; i < message_data["messages"].length; i++) {
+                            new Notification(message_data["messages"][i]["topic"],
+                                    {body: message_data["messages"][i]["message"]});
+                        }
+                        // console.log(message_data["messages"][0]["message"]);
+                        // for (let i in message_data["messages"]){
+                        //     console.log(i["message"]);
+                        //     new Notification("test", {body: i.message});
+                        // }
+                        //displayNotification(message_data["messages"].forEach(displayMessage));
+                    }
+                };
+                    }
+
+            };
+
+            request.open("GET", notifications_endpoint, true);
+            request.send();
+        }
+    </script>
+    {% endif %}
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+   <!--<style>
+      body 
+         { background-image: url( {{url_for ('static', filename='images/background1.jpg') }} )
+      
+         }
+   </style>-->
+<body>
+
+{% with messages=get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{message[0]}} fade show" role="alert">
+                {{message[1]}}
+<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-info">
+      <div class="container"-fluid"">
+        <a class="navbar-brand text-white" href="{{ url_for('main.home') }}">
+            <span style="color:white">
+            <i class="fa fa-leaf" ></i>
+          </span>PlantSpeak</a>
+
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link text-white" aria-current="page" href="{{ url_for('main.home') }}">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-white" href="{{ url_for('plants.show_plants') }}">All Plants</a>
+              </li>
+               <li class="nav-item">
+                <a class="nav-link text-white" href="{{ url_for('plants.show_devices') }}">Find Plant</a>
+              </li>
+               <li class="nav-item">
+                <a class="nav-link text-white" href="{{ url_for('plants.add_plant_type') }}">Add Plant Type</a>
+              </li>
+               {% if session['admin'] %}
+               <li class="nav-item">
+                   <a class="nav-link text-white" href="{{ url_for('users.create_user') }}">Create User</a>
+               </li>
+               {% endif %}
+            </ul>
+            <ul class="navbar-nav ml-auto">
+              {%  if session['username'] %}
+
+<i class="fa fa-user-circle" style="color: white; margin: 6px; font-size: 150%"></i>
+              <li class="nav-item">
+                <span class="navbar-text" style="color: white">
+                    Welcome, {{ session['username']}} |
+                </span>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-white" href="{{ url_for('users.logout') }}">Logout</a>
+              </li>
+                <li class="nav-item" style="margin: 3px; font-size: 150%">
+                    <a href="{{url_for('users.settings')}}">
+                        <i class="fa fa-cog" style="color: white"></i>
+                    </a>
+                </li>
+            </ul>
+            {% else %}
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                  <a class="nav-link text-white" href="{{ url_for('users.login') }}">Log In</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link text-white" href="{{ url_for('users.register') }}">Register</a>
+                </li>
+
+            </ul>
+                {%  endif %}
+        </div>
+      </div>
+    </nav>
+   
+    <div class= "container" style="margin: 0 auto;">
+        {% block content %} 
+        {% endblock %}
+    </div>
+</body>
+</html>
