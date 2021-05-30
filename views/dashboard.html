@@ -1,43 +1,6 @@
 {% extends 'base.html' %}
 {%  block content %}
 
-        <script>
-            var NOTIFICATION_COOLDOWN = 15000;
-
-            window.onload = Notification.requestPermission(function(status) {
-                console.log('Notifications allowed?: ', status==="granted");
-            });
-
-            function displayNotification(topic, message) {
-              if (Notification.permission == 'granted') {
-                new Notification(topic, {body: message});
-              }
-            }
-
-            function displayMessage(item){
-                if(item['topic'] !== undefined && item['message'] !== undefined){
-                    displayNotification(item['topic'], item['message']);
-                }
-            }
-
-            var timer = setInterval(getNotifications, NOTIFICATION_COOLDOWN);
-
-            function getNotifications() {
-                var notifications_endpoint="get_notifications"
-                request = new XMLHttpRequest();
-                request.onreadystatechange = function () {
-
-                    if (request.readyState == 4 && request.status == 200) {
-                        var message_data = JSON.parse(request.responseText);
-                        displayNotification(message_data["messages"].forEach(displayMessage));
-                    }
-                };
-
-                request.open("GET", notifications_endpoint, true);
-                request.send();
-            }
-        </script>
-
     <meta charset="UTF-8">
     <title>Plantspeak - Dashboard</title>
 
@@ -75,6 +38,12 @@
     {% endif %}
 
     <h3>My Saved Plants</h3>
+    {% if plants_with_problems>0 %}
+        <h4>Plants with problems</h4>
+        {{ problems_table }}
+        <hr>
+        <h4>Healthy Plants</h4>
+    {% endif %}
     {{ table }}
 
 {%  endblock %}

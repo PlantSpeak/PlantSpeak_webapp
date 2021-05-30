@@ -24,7 +24,10 @@ class PlantType(db.Model):
                  ideal_moisture_level, min_light_intensity, max_light_intensity):
         self.name = name
         self.requires_water = int(requires_water)
-        self.watering_frequency = watering_frequency
+        if not watering_frequency:
+            self.watering_frequency = 0
+        else:
+            self.watering_frequency = watering_frequency
         self.min_temp = min_temp
         self.max_temp = max_temp
         self.min_humidity = min_humidity

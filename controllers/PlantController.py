@@ -1,5 +1,3 @@
-import time
-
 from flask import Blueprint, current_app, url_for, request, redirect, render_template, session, flash
 from models.Plant import *
 from models.PlantType import *
@@ -10,9 +8,24 @@ from database import db
 from wtforms import Form, BooleanField, StringField, PasswordField, SelectField, validators
 from wtforms.fields.html5 import IntegerField, DecimalField
 from flask_table import Table, Col, ButtonCol, LinkCol
+import time
+import pygal
+from pygal.style import Style
+from datetime import datetime, timedelta
+import calendar
 
+# Registers this blueprint with the main app context.
 plant_pages = Blueprint('plants', __name__, template_folder="views")
 
+# Runs for every page where user authentication is required.
+def check_logged_in():
+    if not session.get('user_id'):
+        flash("Please log in to continue.", category="warning")
+        return False
+    return True
+
+# TABLES
+#  Defining tables to be processed for endpoint functions and on-page rendering by Flask-Table.
 class BaseTable(Table):
     classes = ['table', 'table-striped']
 
@@ -38,6 +51,7 @@ def create_fa_symbol(tooltip_message, symbol, colour):
           <i class="fa %s"></i>
     </span>""" % (tooltip_message, symbol, colour)
 
+# Custom column type override for Flask-Table
 class ProblemsCol(Col):
     def td_format(self, content):
         problem_list = []
@@ -81,11 +95,11 @@ class ReadingsTable(BaseTable):
     light_intensity = Col('Light Intensity (lux)')
 
 class PlantRegistrationForm(Form):
-    #plantname = StringField('Plant Name', [validators.Length(min=NAME_MIN_LENGTH, max=NAME_MAX_LENGTH)])
     plant_type = SelectField('Plant Type')
-    level = StringField('Plant Level')
-    location = StringField('Plant Location', [validators.Length(min=LOCATION_MIN_LENGTH, max=LOCATION_MAX_LENGTH)])
+    level = IntegerField('Plant Level')
+    location = StringField('Plant Location', validators=[validators.Length(min=LOCATION_MIN_LENGTH, max=LOCATION_MAX_LENGTH)])
 
+# Get plants from the user's saved list, based on a list of their ids.
 def getSavedList(plant_ids):
     saved_list = []
     for i in plant_ids:
@@ -93,12 +107,14 @@ def getSavedList(plant_ids):
     return saved_list
 
 def getPlantType(plant_id):
-    print(plant_id)
     plant_type = PlantType.query.filter_by(id=plant_id).one()
     return plant_type.name
 
+# Remove plant from system (and DB).
 @plant_pages.route('/plant_remove/<plant_id>', methods=['GET','POST'])
 def plant_remove(plant_id):
+    if not check_logged_in():
+        return redirect(url_for('users.login'))
     favourites = Favourite.query.filter_by(plant_id=plant_id).all()
     for i in favourites:
         db.session.delete(i)
@@ -107,13 +123,15 @@ def plant_remove(plant_id):
     db.session.delete(plant)
     db.session.commit()
     return redirect(request.referrer)
-#
-# @plant_pages.route('/plant/<id>')
-# def show_plant(id):
-#     return render_template()
 
+# Add favourite plant for user (i.e. add to saved list of plants).
 @plant_pages.route('/add_favourite/<plant_id>', methods=['GET','POST'])
 def add_favourite(plant_id):
+    if Favourite.query.filter_by(plant_id=plant_id).one_or_none():
+        flash("You have already added that plant to your favourites list.", category="warning")
+        return redirect(request.referrer)
+    if not check_logged_in():
+        return redirect(url_for('users.login'))
     if session.get('user_id') is not None:
         favourite = Favourite(session['user_id'], plant_id)
         db.session.add(favourite)
@@ -123,8 +141,11 @@ def add_favourite(plant_id):
     else:
         return redirect(url_for('users.login'))
 
+# Show all plants added to the system (devices which have been paired and assigned a plant type/location details).
 @plant_pages.route('/plants')
 def show_plants():
+    if not check_logged_in():
+        return redirect(url_for('users.login'))
     plants = Plant.query.all()
     plant_records = []
     for i in plants:
@@ -139,6 +160,8 @@ def show_plants():
 
 @plant_pages.route('/register/plant/<device_id>', methods=['GET','POST'])
 def register(device_id):
+    if not check_logged_in():
+        return redirect(url_for('users.login'))
     device = Device.query.filter_by(id=device_id).first()
     form = PlantRegistrationForm(request.form)
     form.plant_type.choices = [(i.id, i.name) for i in PlantType.query.all()]
@@ -158,13 +181,7 @@ def register(device_id):
                 flash("A plant with those details already exists!", category="danger")
     return render_template("register_plant.html", form=form)
 
-import pygal
-from pygal.style import Style
-from datetime import datetime, timedelta
-
-import calendar
-
-
+# Pygal chart preparation helper functions for the plant details/report page.
 def prepare_readings_chart(attribute, attribute_name, readings, x_label_count, y_min, y_max, x_label, y_label, line_colour, logarithmic):
     style = Style(font_family="Arial",  colors=[line_colour], background='transparent')
     temp_chart = pygal.DateTimeLine(x_label_rotation=20, range=(y_min, y_max),
@@ -198,9 +215,11 @@ def prepare_daily_average_chart(records, attribute_name,  x_label_count, y_min, 
     chart = temp_chart.render_data_uri()
     return chart
 
+# Prepares page for displaying individual plant's details and previous readings report.
 @plant_pages.route('/plant/<plant_id>')
 def show_plant(plant_id):
-    plant = Plant.query.filter_by(id=plant_id).one()
+    # Database queries to get info to display on page.
+    plant = Plant.query.filter_by(id=plant_id).one_or_none()
     plant_type = PlantType.query.filter_by(id=plant.type).one().name
     latest_reading = Reading.query.filter_by(mac_address=plant.mac_address).order_by(Reading.time.desc()).first()
 
@@ -210,20 +229,18 @@ def show_plant(plant_id):
     soil_moisture_chart = prepare_readings_chart('soil_moisture', 'Soil Moisture', readings, 10, 0, 100, "Time", "Volumetric Soil Moisture (%)", "#0000FF", False)
     light_intensity_chart = prepare_readings_chart('light_intensity', 'Light Intensity', readings, 10, 0, 1000, "Time", "Light Intesity (lux)", "#FFAA00", True)
 
+    # String formatters for displaying data/times on charts.
     percent_formatter = lambda x: '{:.10g}%'.format(x)
     temperature_formatter = lambda x: u'{:.10g}°C'.format(x)
     lux_formatter = lambda x: u'{:.10g} lux'.format(x)
 
+    # Visually-appealing gauge charts displayed at top of page for latest reading.
     temp_gauge = prepare_gauge_indicator('temperature',"Temperature",latest_reading,0,50,temperature_formatter,"#FF0000", False)
     humidity_gauge = prepare_gauge_indicator('humidity',"Humidity",latest_reading,0,100,percent_formatter,"#0055FF", False)
     soil_moisture_gauge = prepare_gauge_indicator('soil_moisture',"Soil Moisture",latest_reading,0,100,percent_formatter,"#0000FF", False)
     light_intensity_gauge = prepare_gauge_indicator('light_intensity',"Light Intensity",latest_reading,0,1000,lux_formatter,"#FFAA00", True)
 
-    # gauge.add('Humidity', [{'value':  latest_reading.humidity, 'min_value': 0, 'max_value': 100}], formatter=percent_formatter)
-    # gauge.add('Soil Moisture', [{'value':  latest_reading.soil_moisture, 'min_value': 0, 'max_value': 50}], formatter=percent_formatter)
-    # gauge.add('Light Intensity', [{'value': latest_reading.light_intensity, 'min_value': 0, 'max_value':1000}])
-    # temp_gauge = gauge.render(is_unicode=True)
-
+    # Prepare the table of all recent readings.
     readings_records = []
     for i in readings:
         readings_records.append(dict(
@@ -235,6 +252,7 @@ def show_plant(plant_id):
         ))
     table = ReadingsTable(readings_records)
 
+    # Preparing charts of average daily readings over month.
     MONTH_LENGTH=2592000
     readings_month = Reading.query.filter_by(mac_address=plant.mac_address).filter(time.time()-Reading.time<=MONTH_LENGTH).order_by(Reading.time.desc()).all()
 
@@ -258,6 +276,7 @@ def show_plant(plant_id):
         month_avgs[i]["soil_moisture"] = sum(soil_moistures)/len(soil_moistures)
         month_avgs[i]["light_intensity"] = sum(light_intensities)/len(light_intensities)
 
+    # Preparing charts of average daily readings over week.
     week_records = []
     min_date = datetime.now().date()-timedelta(days=7)
     for i in month_avgs.keys():
@@ -291,9 +310,7 @@ def show_plant(plant_id):
                                                            "Soil Moisture (%)", "#0000FF", False)
     month_light_intensity_chart = prepare_daily_average_chart(month_light_intensities, "Light Intensity", 7, 0, 1000,
                                                              "Date", "Light Intensity (lux)", "#FFAA00", True)
-
-
-
+    latest_reading_time = time.strftime("%r on %Y-%m-%d", time.localtime(latest_reading.time))
 
     return render_template('plant.html', plant=plant, latest_reading=latest_reading,
                            temperature_chart=temperature_chart, humidity_chart=humidity_chart,
@@ -310,10 +327,13 @@ def show_plant(plant_id):
                            month_temperature_chart=month_temperature_chart,
                            month_humidity_chart=month_humidity_chart,
                            month_soil_moisture_chart=month_soil_moisture_chart,
+                           latest_reading_time=latest_reading_time,
                            month_light_intensity_chart=month_light_intensity_chart)
 
 @plant_pages.route('/saved_plant_remove/<plant_id>', methods=['GET','POST'])
 def saved_list_remove(plant_id):
+    if not check_logged_in():
+        return redirect(url_for('users.login'))
     plant = Favourite.query.filter_by(plant_id=plant_id).one()
     db.session.delete(plant)
     db.session.commit()
@@ -323,10 +343,11 @@ def saved_list_remove(plant_id):
 @plant_pages.route('/dashboard')
 def dashboard():
     if session.get('user_id') is not None:
-        # user = User.query.filter_by(id=user_id)
         favourites = Favourite.query.filter_by(user_id=session.get('user_id')).all()
         favourites_records = []
+        problems_records = []
         plants_with_problems=0
+        # Iterate over all plants to get their latest reading(s) and prepare a summary of their current state.
         for i in favourites:
             plant = Plant.query.filter_by(id=i.plant_id).one()
             if plant.type:
@@ -334,30 +355,36 @@ def dashboard():
             else:
                 plant_type = "None"
             last_reading = Reading.query.filter_by(mac_address=plant.mac_address).order_by(Reading.time.desc()).first()
+            if not last_reading:
+                continue
             problems = plant.get_problems(last_reading)
             problem_list = []
-            if problems:
+            last_seen = str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(last_reading.time)))
+            if True in problems.values():
                 condition = "Needs Attention"
                 plants_with_problems += 1
+                problems_records.append(dict(plant_id=i.plant_id, type=plant_type, location=plant.location,
+                                             floor=plant.level, condition=condition, alerts=problems,
+                                             last_seen=last_seen))
 
             else:
                 condition = "Healthy"
+                favourites_records.append(dict(plant_id=i.plant_id, type=plant_type, location=plant.location,
+                                               floor=plant.level, condition=condition, alerts=problems,
+                                               last_seen=last_seen))
+
             if not problem_list:
                 problem_list = "None"
 
-
-            last_seen = str(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(last_reading.time)))
-            print(last_reading.temperature)
-            favourites_records.append(dict(plant_id=i.plant_id, type=plant_type, location=plant.location,
-                                      floor=plant.level, condition=condition, alerts=problems, last_seen=last_seen))
-        print(favourites_records)
+        # Prepare the tables of saved items/favourite plants to be displayed on the dashboard.
+        problems_table = SavedListTable(problems_records, classes=["table table-striped"])
         table = SavedListTable(favourites_records, classes=["table table-striped"])
-        return render_template('dashboard.html', table=table, plants_with_problems=plants_with_problems)
+        return render_template('dashboard.html', problems_table=problems_table, table=table, plants_with_problems=plants_with_problems)
     else:
         return redirect(url_for('users.login'))
 
 class PlantTypeRegistrationForm(Form):
-    plant_type = StringField()
+    plant_type = StringField(validators=[validators.required()])
     requires_water = BooleanField()
     watering_frequency_interval = IntegerField(label="", validators=[validators.optional()])
     watering_frequency_unit = SelectField(label="",
@@ -385,21 +412,44 @@ class PlantTypeRegistrationForm(Form):
 
 @plant_pages.route('/add_plant_type', methods=['GET','POST'])
 def add_plant_type():
+    if not check_logged_in():
+        return redirect(url_for('users.login'))
     form = PlantTypeRegistrationForm(request.form)
     # Load in choices at runtime (with app context).
-    if request.method=="POST" and form.validate():
-        print(form.watering_frequency_unit.data, form.watering_frequency_interval.data)
-        newPlantType = PlantType(form.plant_type.data, form.requires_water.data, int(form.watering_frequency_unit.data)/form.watering_frequency_interval.data,
-                                 form.min_temp.data, form.max_temp.data, form.min_humidity.data, form.max_humidity.data,
-                                 form.min_soil_moisture.data, form.max_soil_moisture.data, form.ideal_soil_moisture_level.data,
-                                 form.min_light_intensity.data, form.max_light_intensity.data)
-        db.session.add(newPlantType)
-        db.session.commit()
-        return redirect(url_for('main.home'))
+    if request.method=="POST":
+        if form.validate():
+            if form.requires_water.data:
+                requires_water = 1
+                try:
+                    watering_interval = int(form.watering_frequency_unit.data) / form.watering_frequency_interval.data
+                except:
+                    flash("Invalid watering interval.", category="danger")
+                    return render_template("add_plant_type.html", form=form)
+            else:
+                requires_water = 0
+                watering_interval = 0
+
+            existing = PlantType.query.filter_by(name=form.plant_type.data).one_or_none()
+
+            if not existing:
+                newPlantType = PlantType(form.plant_type.data, requires_water, watering_interval,
+                                         form.min_temp.data, form.max_temp.data, form.min_humidity.data, form.max_humidity.data,
+                                         form.min_soil_moisture.data, form.max_soil_moisture.data, form.ideal_soil_moisture_level.data,
+                                         form.min_light_intensity.data, form.max_light_intensity.data)
+                db.session.add(newPlantType)
+                db.session.commit()
+                return redirect(url_for('plants.show_devices'))
+            else:
+                flash("A plant with that name already exists.", category="danger")
+                return render_template("add_plant_type.html", form=form)
+        else:
+            flash("There were issues with your inputs.", category="danger")
     return render_template("add_plant_type.html", form=form)
 
 @plant_pages.route('/devices', methods=['GET','POST'])
 def show_devices():
+    if not check_logged_in():
+        return redirect(url_for('users.login'))
     DEVICE_TIMEOUT = 300 # 5 Minute timeout
     devices = Device.query.filter(Device.last_seen >= time.time()-DEVICE_TIMEOUT).all()
     devices_table_items = []

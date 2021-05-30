@@ -8,6 +8,7 @@ import flask_bcrypt
 
 user_pages = Blueprint('users', __name__, template_folder="views")
 
+# Forms for user control/related operations.
 class LoginForm(Form):
     username = StringField('Username')
     password = PasswordField('Password')
@@ -21,11 +22,13 @@ class RegistrationForm(Form):
     ])
     confirm_password = PasswordField('Repeat Password')
 
+# Checks if user is already in the database.
 def userExists(username):
     if User.query.filter_by(username=username).all():
         return True
     return False
 
+# User registration endpoint and processing.
 @user_pages.route('/register', methods=['GET','POST'])
 def register():
     form = RegistrationForm(request.form)
@@ -36,13 +39,17 @@ def register():
             db.session.commit()
             session['user_id'] = newUser.id
             session['username'] = newUser.username
+            if newUser.type == 1:
+                session['admin'] = True
+            else:
+                session['admin'] = False
             flash("Your user account has been created!", category="success")
             return redirect(url_for('main.home'))
         else:
             form.username.errors.append("That username is already taken.")
     return render_template("register.html", form=form)
 
-
+# Flask form for create user page.
 class CreateUserForm(Form):
     username = StringField('Username', [validators.Length(min=USERNAME_MIN_LENGTH, max=USERNAME_MAX_LENGTH)])
     email = StringField('Email Address', [validators.Length(min=EMAIL_MIN_LENGTH, max=EMAIL_MAX_LENGTH)])
@@ -77,6 +84,7 @@ def create_user():
             return redirect(url_for('main.home'))
     return render_template("create_user.html", form=form)
 
+# Login page.
 @user_pages.route('/login', methods=['GET','POST'])
 def login():
     if session.get('password_attempts') is None:
@@ -103,8 +111,55 @@ def login():
                                    error="You have exceeded the maximum number of password attempts. Please try again later.")
     return render_template('login.html', form=form)
 
+# Logs user out by deleting session cookies.
 @user_pages.route('/logout', methods=['GET','POST'])
 def logout():
     session.pop('user_id', None)
     session.pop('username', None)
     return redirect(url_for('main.home'))
+
+# The following form type and function help render the settings webpage, where users can control
+# the types of notifications that they receive.
+class SettingsForm(Form):
+    push_notifications = BooleanField('Push Notifications')
+    email_notifications = BooleanField('Email Notifications')
+
+@user_pages.route('/settings', methods=['GET','POST'])
+def settings():
+    if not session.get('user_id'):
+        flash("You need to be logged in to do that.", category="danger")
+        return redirect(url_for('main.home'))
+
+    user = User.query.filter_by(id=session['user_id']).first()
+    form = SettingsForm(request.form)
+
+    if request.method=="GET":
+        if user.push_notifications == 1:
+            form.push_notifications.data = True
+        else:
+            form.push_notifications.data = False
+
+        if user.email_notifications == 1:
+            form.email_notifications.data = True
+        else:
+            form.email_notifications.data = False
+
+    if request.method=="POST":
+        if form.email_notifications.data:
+            user.email_notifications = 1
+        else:
+            user.email_notifications = 0
+
+        if form.push_notifications.data:
+            user.push_notifications = 1
+        else:
+            user.push_notifications = 0
+        print(user.push_notifications)
+        db.session.commit()
+        flash("Your changes to settings have been saved.", category="success")
+        return redirect(url_for('main.home'))
+
+    return render_template('settings.html', form=form)
+
+
+

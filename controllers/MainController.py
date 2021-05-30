@@ -4,6 +4,3 @@ main_pages = Blueprint('main', __name__, template_folder="views")
 @main_pages.route('/')
 def home():
     return redirect(url_for('plants.dashboard'))
-    #if session.get('username'):
-    #    return 'Welcome to PlantSpeak, %s!' % session['username']
-    #return 'Welcome to PlantSpeak!'

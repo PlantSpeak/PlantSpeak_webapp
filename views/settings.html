@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+{% from "_formlayout.html" import generate_field %}
+
+<h2> Settings </h2>
+        <hr>
+    <form method="post">
+        {{ generate_field(form.push_notifications) }}
+        {{ generate_field(form.email_notifications) }}
+            <input type="submit" value="Submit">
+        {{error}}
+    </form>
+
+{% endblock %}

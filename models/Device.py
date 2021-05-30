@@ -4,6 +4,7 @@ from models.Plant import NAME_MAX_LENGTH, LOCATION_MAX_LENGTH
 
 MAC_ADDR_LEN = 17
 
+# A class designed to contain information about a device when one is detected by the webapp.
 class Device(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     mac_address = db.Column(db.String(MAC_ADDR_LEN), unique=True)
