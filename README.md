@@ -16,7 +16,6 @@ First you must install python and python pip (package manager) on your system. T
 
 to install on Ubuntu.
 
-When
 ### Running the web application
 #### Unix-based (Mac OS and Linux)
 Enter the following commands into your unix terminal after pulling from github. This program requires python3 and python pip (package manager).
