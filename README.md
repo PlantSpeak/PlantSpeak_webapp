@@ -1,4 +1,6 @@
 # PlantSpeak
+Github Repository: https://github.com/PlantSpeak/PlantSpeak_webapp
+
 This software is intended to be used in conjunction with [PlantSpeak_device](https://github.com/PlantSpeak/PlantSpeak_device) - software for the device that this web application communicates with.
 
 ## Software Requirements
