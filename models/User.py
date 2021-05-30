@@ -24,9 +24,9 @@ class User(db.Model):
     # last_login = db.Column(db.Time)
 
     def __init__(self, password, **kwargs):
+        super(User, self).__init__(**kwargs)
         self.push_notifications = 1
         self.email_notifications = 1
-        super(User, self).__init__(**kwargs)
         # Generate the random salt and then use this when hashing the password.
         self.password_salt = uuid.uuid4().__str__()
         self.password_hash=bcrypt.generate_password_hash(self.password_salt+password)
