@@ -1,5 +1,23 @@
 # PlantSpeak
+This software is intended to be used in conjunction with [PlantSpeak_device](https://github.com/PlantSpeak/PlantSpeak_device) - software for the device that this web application communicates with.
+
+## Software Requirements
+- Python 3
+- An MQTT broker such as Eclipse Mosquitto (this has been tested and works well for the purposes of the app).
+
+## System Requirements
+In terms of system requirements, these have not been tested rigorously and so are subject to speculation. However, because of the overhead of the python interpreter, additional libraries used and Mosquitto (MQTT broker) all having to run simultaneously, it is recommended that a few hundred MB of RAM be available on the system at idle (after booting when the OS has been loaded) for the software to run reliably. More RAM will be required to use PostgreSQL as the database server. The web application is known to run well with SQLite on a VPS with 1GB of RAM and a single modern virtual CPU core.
+
 ## Running the Development Server
+### Install Prerequisites
+First you must install python and python pip (package manager) on your system. The process will vary depending on operating system, but as an example you would type:
+
+`sudo apt-get install python python-pip mosquitto`
+
+to install on Ubuntu.
+
+### Running the web application
+#### Unix-based (Mac OS and Linux)
 Enter the following commands into your unix terminal after pulling from github. This program requires python3 and python pip (package manager).
 
     cd <plantspeak_directory>
@@ -10,7 +28,8 @@ where ``plantspeak_directory`` is the folder containing the repository you pulle
     source venv/bin/activate
     pip install -r requirements.txt
     python app.py
-	
+
+#### Microsoft Windows
 FOR WINDOWS MACHINES, Then...
 
     python3 -m venv venv
