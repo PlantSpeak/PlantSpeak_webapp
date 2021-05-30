@@ -9,6 +9,18 @@
             }
         </style>
 
+        <script>
+$(document).ready(function() {
+    $('#requires_water').click(function () {
+        if ($('#requires_water').is(':checked')) {
+            $("#watering-frequency-row").show();
+        } else {
+            $("#watering-frequency-row").hide();
+        }
+    });
+});
+        </script>
+
     <h2>Add Plant Type</h2>
 
 <hr>
@@ -32,7 +44,7 @@
             </div>
         </div>
     </div>
-    <div class="form-row">
+    <div class="form-row" id="watering-frequency-row" style="display: none;">
         <div class="input-group">
             <div class="col-xs-12 field">
                 <i class="fa fa-hourglass-end text-info"></i>
@@ -51,6 +63,7 @@
                 <i class="fa fa-thermometer-half text-info"></i>
                 <label for="form-control" class="text-info">Temperature Range</label>
                 {{ joined_field(form.min_temp, " to", form.max_temp, "°C") }}
+                <small class="form-text text-muted">Leave empty for none.</small>
             </div>
         </div>
     </div>
@@ -61,6 +74,7 @@
                 <i class="fa fa-tint text-info"></i>
                 <label for="form-control" class="text-info">Humidity Range</label>
                 {{ joined_field(form.min_humidity, " to", form.max_humidity, "%") }}
+                <small class="form-text text-muted">Leave empty for none.</small>
             </div>
         </div>
     </div>
@@ -71,6 +85,7 @@
                 <i class="fa fa-water text-info"></i>
                     <label for="form-control" class="text-info">Volumetric Soil Moisture Range</label>
                     {{ joined_field(form.min_soil_moisture, " to", form.max_soil_moisture, "%") }}
+                <small class="form-text text-muted">Leave empty for none.</small>
                 </div>
             </div>
         </div>
@@ -90,6 +105,7 @@
                 <i class="far fa-lightbulb text-info"></i>
                 <label for="form-control" class="text-info">Light Intensity Range (Lux)</label>
                 {{ joined_field(form.min_light_intensity, " to", form.max_light_intensity, "lux") }}
+                <small class="form-text text-muted">Leave empty for none.</small>
             </div>
         </div>
     </div>

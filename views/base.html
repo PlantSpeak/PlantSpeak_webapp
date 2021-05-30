@@ -13,6 +13,60 @@
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
 
+    {% if session['user_id'] %}
+
+    <script>
+        var NOTIFICATION_COOLDOWN = 15000;
+
+        window.onload = Notification.requestPermission(function (status) {
+            console.log('Notifications allowed?: ', status === "granted");
+        });
+
+        function displayNotification(topic, message) {
+            if (Notification.permission == 'granted') {
+                new Notification(topic, {body: message});
+            }
+        }
+
+        function displayMessage(item) {
+            displayNotification(item['topic'], item['message']);
+        }
+
+        var timer = setInterval(getNotifications, NOTIFICATION_COOLDOWN);
+
+        function getNotifications() {
+            var notifications_endpoint = "get_notifications"
+            request = new XMLHttpRequest();
+            request.onreadystatechange = function () {
+
+                if (request.readyState == 4 && request.status == 200) {
+                    var message_data = JSON.parse(request.responseText);
+                    console.log(message_data);
+                    if (message_data) {
+
+                    if (message_data["messages"] !== undefined) {
+                        for (i = 0; i < message_data["messages"].length; i++) {
+                            new Notification(message_data["messages"][i]["topic"],
+                                    {body: message_data["messages"][i]["message"]});
+                        }
+                        // console.log(message_data["messages"][0]["message"]);
+                        // for (let i in message_data["messages"]){
+                        //     console.log(i["message"]);
+                        //     new Notification("test", {body: i.message});
+                        // }
+                        //displayNotification(message_data["messages"].forEach(displayMessage));
+                    }
+                };
+                    }
+
+            };
+
+            request.open("GET", notifications_endpoint, true);
+            request.send();
+        }
+    </script>
+    {% endif %}
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
    <!--<style>
@@ -60,22 +114,29 @@
                <li class="nav-item">
                 <a class="nav-link text-white" href="{{ url_for('plants.add_plant_type') }}">Add Plant Type</a>
               </li>
+               {% if session['admin'] %}
                <li class="nav-item">
                    <a class="nav-link text-white" href="{{ url_for('users.create_user') }}">Create User</a>
                </li>
+               {% endif %}
             </ul>
             <ul class="navbar-nav ml-auto">
               {%  if session['username'] %}
 
-<i class="fa fa-user-circle"></i>
+<i class="fa fa-user-circle" style="color: white; margin: 6px; font-size: 150%"></i>
               <li class="nav-item">
-                <span class="navbar-text">
-                    Welcome, {{ session['username']}}
+                <span class="navbar-text" style="color: white">
+                    Welcome, {{ session['username']}} |
                 </span>
               </li>
               <li class="nav-item">
                 <a class="nav-link text-white" href="{{ url_for('users.logout') }}">Logout</a>
               </li>
+                <li class="nav-item" style="margin: 3px; font-size: 150%">
+                    <a href="{{url_for('users.settings')}}">
+                        <i class="fa fa-cog" style="color: white"></i>
+                    </a>
+                </li>
             </ul>
             {% else %}
             <ul class="navbar-nav ml-auto">

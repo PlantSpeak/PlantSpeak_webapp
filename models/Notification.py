@@ -3,8 +3,12 @@ from database import bcrypt, db
 from mail_tool import mail
 from flask_mail import Message
 import time
+from models.User import *
 
-NOTIFICATION_COOLDOWN = 1800 # 30 Minutes between notifications. Notifications in this time range will be concatenated into a single message.
+# Constants
+NOTIFICATION_COOLDOWN = 1800 # 30 Minutes between notifications.
+#                              Notifications in this time range
+#                              will be concatenated into a single message.
 MESSAGE_MAX_LENGTH = 32768
 PHONE_MAX_LENGTH = 16
 MAX_TOPIC_LENGTH = 16
@@ -13,10 +17,13 @@ EMAIL_MAX_LENGTH = 256
 types = {0: "Watering Reminder",
          1: "Plant Health Problems"}
 
+# NOTIFICATIONS
+# This class model contains data required for the sending of notification,
+# and serves as a record of notifications sent.
+
 # As it stands, only email and push notifications are being implemented.
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    # type = db.Column(db.Integer)
     user_id = db.Column(db.Integer)
     plant_id = db.Column(db.Integer)
     topic = db.Column(db.String(MAX_TOPIC_LENGTH))
@@ -32,10 +39,13 @@ class Notification(db.Model):
         self.email = email
         self.time = time.time()
 
+    # Triggers the sending of an email to the user the notifiation was generated for.
     def sendEmail(self):
-        msg = Message(self.topic, recipients=[self.email], sender='PlantSpeak')
-        msg.body = self.message
-        mail.send(msg)
+        user = User.query.filter_by(user_id = self.user_id)
+        if user.email_notifications==1:
+            msg = Message(self.topic, recipients=[self.email], sender='PlantSpeak')
+            msg.body = self.message
+            mail.send(msg)
 
     def send(self):
         if self.email:

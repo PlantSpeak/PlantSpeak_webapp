@@ -3,20 +3,28 @@ from models.Reading import *
 import json
 
 api = Blueprint('api', __name__)
-#
-# @api.route('/api/plant/<id>')
-# def get_plant_details(id):
-#
-# @api.route('/api/plant/readings/<id>')
-# def get_latest_reading_from_id(id):
 
+# RESTful API
+#   The following RESTful API endpoints allow for the manipulation of reading entries in the database.
+#
+#   Requests for all endpoints except GET (which takes plant id as a parameter in the GET request)
+#   should have json as the body content in the following format:
+#   { "id": <only required if updating existing reading>,
+#       "mac_address": <the mac address of the device you are making the reading for>,
+#       "temperature": <ambient temperature percentage>,
+#       "humidity": <ambient humidity percentage>,
+#       "soil_moisture": <volumetric soil moisture %>,
+#       "light_intensity": <light intensity of reading in lux>
+#   }
 
+# GET existing reading in the database.
 @api.route('/api/readings', methods=['GET'])
 def get_readings():
     id = request.args.get('id')
     num_readings = request.args.get('num_readings')
     return jsonify([i.serialize for i in Reading.query.filter_by(plant_id=id).order_by(Reading.time.desc()).limit(num_readings).all()])
 
+# POST or write a new reading to the database.
 @api.route('/api/readings', methods=['POST'])
 def add_reading():
     response = {"errors": None}
@@ -38,6 +46,7 @@ def add_reading():
         db.session.commit()
     return response
 
+# PATCH or update an existing reading in the database.
 @api.route('/api/readings', methods=['PATCH'])
 def update_reading():
     response = {"errors": None}
@@ -53,8 +62,8 @@ def update_reading():
         existing_record.soil_moisture = float(reading["soil_moisture"])
     db.session.commit()
     return response
-    # db.session.add(reading)
 
+# DELETE or remove an existing reading from the database.
 @api.route('/api/readings', methods=['DELETE'])
 def delete_reading():
     response = {"errors": None}
@@ -63,11 +72,3 @@ def delete_reading():
     db.session.delete(reading)
     db.session.commit()
     return response
-
-    # name = request.args.get('name')
-    #
-    # name = request.args.get('name')
-
-#
-# @api.route('/api/plant/readings/<name>')
-# def get_latest_reading_from_name

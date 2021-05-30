@@ -3,6 +3,7 @@ from models.Plant import *
 from models.User import *
 import time
 
+# A class model to contain details about a plant favourited by a user.
 class Favourite(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey(User.id), primary_key=True)
     plant_id = db.Column(db.Integer, db.ForeignKey(Plant.id), primary_key=True)

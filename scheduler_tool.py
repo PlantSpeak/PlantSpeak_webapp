@@ -6,6 +6,3 @@ from models.Favourite import *
 
 from flask_apscheduler import APScheduler
 scheduler = APScheduler()
-from flask import current_app
-
-#

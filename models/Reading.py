@@ -6,6 +6,8 @@ from models.Plant import *
 from flask import current_app
 from datetime import datetime
 
+# This class model contains information the information from
+# each set of sensor readings received from the device.
 class Reading(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     plant_id = db.Column(db.Integer, db.ForeignKey(Plant.id))
@@ -25,14 +27,6 @@ class Reading(db.Model):
         self.moisture_index = moisture_index
         self.mac_address = mac_address
         self.plant_id = plant_id
-
-    # TODO
-    def getMoistureIndex(self):
-        return 0
-
-    # TODO
-    def getMoistureDescription(self):
-        return 0
 
     @property
     def serialize(self):
