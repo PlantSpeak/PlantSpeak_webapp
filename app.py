@@ -27,7 +27,7 @@ import paho.mqtt.client as mqtt
 from mail_tool import mail
 
 # MQTT DETAILS
-MQTT_SERVER_ADDRESS = '192.168.1.100' # Change this to your MQTT server address.
+MQTT_SERVER_ADDRESS = 'localhost' # Change this to your MQTT server address.
 
 # Invisible helper form to help determine whether MAC addresses received are valid.
 class MacAdressValidationForm(Form):
@@ -206,12 +206,13 @@ def create_app():
     with application.app_context():
         db.create_all()
 
-    application.config['MAIL_SERVER'] = 'smtp.mailtrap.io'
-    application.config['MAIL_PORT'] = 2525
-    application.config['MAIL_USERNAME'] = 'a4975278137a6d'
-    application.config['MAIL_PASSWORD'] = 'f70fced936ff01'
-    application.config['MAIL_USE_TLS'] = True
-    application.config['MAIL_USE_SSL'] = False
+    # MAIL SERVER DETAILS
+    application.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    application.config['MAIL_PORT'] = 465
+    application.config['MAIL_USERNAME'] = ''
+    application.config['MAIL_PASSWORD'] = ''
+    application.config['MAIL_USE_TLS'] = False
+    application.config['MAIL_USE_SSL'] = True
 
     mail.init_app(application)
 
@@ -257,4 +258,4 @@ def prepare_db():
         db.session.commit()
 
 if __name__ == '__main__':
-    application.run(debug=True, use_reloader=False)
+    application.run(debug=False, use_reloader=False)
