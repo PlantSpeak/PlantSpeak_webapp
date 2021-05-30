@@ -41,7 +41,7 @@ class Notification(db.Model):
 
     # Triggers the sending of an email to the user the notifiation was generated for.
     def sendEmail(self):
-        user = User.query.filter_by(id = self.user_id)
+        user = User.query.filter_by(id = self.user_id).one_or_none()
         if user.email_notifications==1:
             msg = Message(self.topic, recipients=[self.email], sender='PlantSpeak')
             msg.body = self.message
