@@ -26,6 +26,8 @@ import paho.mqtt.client as mqtt
 
 from mail_tool import mail
 
+from flask_cors import CORS
+
 # MQTT DETAILS
 MQTT_SERVER_ADDRESS = 'localhost' # Change this to your MQTT server address.
 
@@ -198,7 +200,7 @@ def create_app():
     # This must be set false for emails to actually send.
     application.testing = False
 
-    application.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'  # REPLACE THIS.
+    application.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db" # REPLACE THIS.
     application.secret_key = "VERY SECRET KEY"  # Update for production.
 
     bcrypt.init_app(application)
@@ -231,6 +233,7 @@ def create_app():
 # Run the factory at startup and create separate thread + daemonise mqtt functions
 # (otherwise interferes with the smooth operation of the webapp).
 application = create_app()
+CORS(application)
 mqtt_thread = threading.Thread(target=launch_mqtt)
 mqtt_thread.setDaemon(True)
 mqtt_thread.start()

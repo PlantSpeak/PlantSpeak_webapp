@@ -12,6 +12,7 @@ PASSWORD_MAX_LENGTH = 128
 
 # User model/class
 class User(db.Model):
+    __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.Integer)
     # signed_up = db.Column(db.Time)
@@ -29,7 +30,7 @@ class User(db.Model):
         self.email_notifications = 1
         # Generate the random salt and then use this when hashing the password.
         self.password_salt = uuid.uuid4().__str__()
-        self.password_hash=bcrypt.generate_password_hash(self.password_salt+password)
+        self.password_hash=bcrypt.generate_password_hash(self.password_salt+password).decode('utf-8')
 
     def login(self, password_attempt):
         if bcrypt.check_password_hash(self.password_hash, self.password_salt+password_attempt):
