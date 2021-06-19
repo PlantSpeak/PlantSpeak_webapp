@@ -29,7 +29,7 @@ from mail_tool import mail
 from flask_cors import CORS
 
 # MQTT DETAILS
-MQTT_SERVER_ADDRESS = 'localhost' # Change this to your MQTT server address.
+MQTT_SERVER_ADDRESS = '128.199.252.105' # Change this to your MQTT server address.
 
 # Invisible helper form to help determine whether MAC addresses received are valid.
 class MacAdressValidationForm(Form):
