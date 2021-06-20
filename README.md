@@ -43,6 +43,7 @@ You should now have the webserver running and accessible on localhost at port 50
 Enter the following address in the web browser to access the webapp: ``localhost:5000``.
 
 ## Example Deployment
-A deployment of the web application will be hosted on a Cloud VPS at the address: http://128.199.252.105
+A deployment of the web application will be hosted on a Cloud VPS at the following address: https://www.plantspeak.tech
+Alternatively, if this link does not work, the server can be accessed at http://128.199.252.105
 
-Please note that HTTPS is not supported in this implementation and so will need to be changed to http in the prefix of the web address.
+Please note that connecting with HTTPS (via the first link) is required to receieve push notifications (in-browser).
